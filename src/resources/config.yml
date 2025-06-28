@@ -1,0 +1,44 @@
+# Configurações do MithCraft Magnata
+messages:
+  prefix: "&6[Magnata] &7"
+  
+  current_magnata:
+    - "&e=== &6Magnata Atual &e==="
+    - "&6Jogador: &f%player%"
+    - "&6Fortuna: &a$%vault_eco_balance%"
+    - "&6Desde: &f%magnata_since%"
+    - "&e===================="
+
+  broadcast_new_magnata:
+    - "&e"
+    - "&6&lNOVO MAGNATA!"
+    - "&eParabéns a &6%player% &e(&a$%vault_eco_balance%&e)"
+    - "&e"
+
+  history:
+    header:
+      - "&e=== &6Histórico de Magnatas &e==="
+      - "&6Posição | Jogador | Fortuna | Data"
+    entry: "&e%position%. &6%player% &7- &a$%vault_eco_balance% &7(%date%)"
+    footer:
+      - "&eTotal: &6%total% magnatas"
+      - "&eUse &6/magnata &epara ver o atual"
+
+rewards:
+  on_become:
+    - "eco give %player% 1000"
+    - "lp user %player% permission set kit.magnata"
+    - "broadcast &aNovo magnata: %player% recebeu recompensas!"
+  periodic:
+    interval_minutes: 60
+    commands:
+      - "eco give %player% 500"
+      - "effect give %player% strength 30 1"
+
+commands:
+  main: "magnata"
+  history: "magnata hist"
+
+settings:
+  check_interval_seconds: 300
+  use_placeholderapi: true
