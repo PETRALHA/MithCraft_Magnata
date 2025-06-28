@@ -14,10 +14,10 @@
     </properties>
 
     <repositories>
-        <!-- Repositório do Spigot -->
+        <!-- Repositório do PaperMC -->
         <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>papermc-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <!-- Repositório do EssentialsX -->
         <repository>
@@ -29,18 +29,13 @@
             <id>luckperms-repo</id>
             <url>https://repo.luckperms.io/</url>
         </repository>
-        <!-- Repositório do PlaceholderAPI -->
-        <repository>
-            <id>placeholderapi-repo</id>
-            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
-        </repository>
     </repositories>
 
     <dependencies>
-        <!-- Bukkit/Spigot API -->
+        <!-- PaperMC API -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.21-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -57,15 +52,6 @@
             <artifactId>api</artifactId>
             <version>5.4</version>
             <scope>provided</scope>
-        </dependency>
-        
-        <!-- Dependência opcional -->
-        <dependency>
-            <groupId>me.clip</groupId>
-            <artifactId>placeholderapi</artifactId>
-            <version>2.11.3</version>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -84,14 +70,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.5.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
             </plugin>
         </plugins>
     </build>

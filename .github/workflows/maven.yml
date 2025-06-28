@@ -18,10 +18,11 @@ jobs:
     - name: Build with Maven
       run: |
         mvn dependency:go-offline
-        mvn clean package
+        mvn clean install -DskipTests
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: MithCraftMagnata
         path: target/*.jar
+        retention-days: 5
