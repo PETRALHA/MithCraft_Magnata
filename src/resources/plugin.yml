@@ -9,3 +9,17 @@ commands:
   magnata hist:
     description: Mostra o histórico de magnatas
     aliases: [magnatas, maghist]
+
+permissions:
+  magnata.command:
+    description: Permissão para usar o comando principal
+    default: true
+  magnata.history:
+    description: Permissão para ver o histórico
+    default: true
+  magnata.reload:
+    description: Permissão para recarregar o plugin
+    default: op
+  magnata.help:
+    description: Permissão para ver a ajuda
+    default: true

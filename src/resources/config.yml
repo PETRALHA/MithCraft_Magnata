@@ -42,3 +42,9 @@ commands:
 settings:
   check_interval_seconds: 300
   use_placeholderapi: true
+
+permissions:
+  magnata: "magnata.command"
+  magnata_history: "magnata.history"
+  magnata_reload: "magnata.reload"
+  magnata_help: "magnata.help"

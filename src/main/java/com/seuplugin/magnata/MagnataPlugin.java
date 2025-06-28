@@ -41,6 +41,7 @@ public class MagnataPlugin extends JavaPlugin {
         getCommand("magnata").setExecutor(new MagnataCommand(this));
         getCommand("magnata").setTabCompleter(new MagnataTabCompleter());
         getCommand("magnata hist").setExecutor(new MagnataHistoryCommand(this));
+        getCommand("magnata help").setExecutor(new MagnataHelpCommand(this));
     }
 
     // Métodos auxiliares (setupEconomy, setupLuckPerms, etc...)
