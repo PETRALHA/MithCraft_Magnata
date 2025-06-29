@@ -7,24 +7,29 @@ description: Sistema de Magnata para servidores Minecraft
 
 commands:
   magnata:
-    description: Verifica o magnata atual
-    usage: /magnata [help|hist|reload]
-  magnata-history:
-    description: Mostra o histórico
-    usage: /magnata hist
+    description: Comandos do sistema Magnata
+    usage: |
+      /magnata - Mostra o magnata atual
+      /magnata help - Mostra esta ajuda
+      /magnata history - Mostra o histórico (aliases: hist, list)
+      /magnata reload - Recarrega o plugin
+    aliases: []
 
 permissions:
   magnata.command:
-    description: Comandos básicos
+    description: Acesso aos comandos básicos
+    default: true
+  magnata.help:
+    description: Permissão para ver a ajuda
     default: true
   magnata.history:
-    description: Ver histórico
+    description: Permissão para ver o histórico
     default: true
   magnata.reload:
-    description: Recarregar plugin
+    description: Permissão para recarregar o plugin
     default: op
   magnata.admin:
-    description: Todas as permissões
+    description: Todas as permissões do plugin
     default: op
     children:
       magnata.*: true
