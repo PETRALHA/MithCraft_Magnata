@@ -1,9 +1,12 @@
 package com.mithcraft.magnata.managers;
 
 import com.mithcraft.magnata.MagnataPlugin;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.command.CommandSender;
+
 import java.util.List;
 import java.util.logging.Level;
 
@@ -17,66 +20,78 @@ public class RewardManager {
     }
 
     public void giveBecomeMagnataRewards(OfflinePlayer newMagnata) {
-        // Remover o magnata anterior
-        MagnataRecord previous = plugin.getHistoryManager().getHistory().size() > 0 
-            ? plugin.getHistoryManager().getHistory().get(0) 
-            : null;
-        
-        if (previous != null) {
-            executeRewardCommand("lp user " + previous.getPlayerName() + " parent remove magnata");
-        }
+        // 1. Remover do magnata anterior
+        removePreviousMagnata();
 
-        // Dar recompensas ao novo
+        // 2. Aplicar recompensas ao novo
         executeRewardCommands("on_become", newMagnata);
     }
 
+    private void removePreviousMagnata() {
+        try {
+            List<MagnataRecord> history = plugin.getHistoryManager().getHistory();
+            if (history.size() > 1) { // Posição 0 é o atual, 1 é o anterior
+                String previousMagnata = history.get(1).getPlayerName();
+                executeRewardCommand(
+                    PlaceholderAPI.setPlaceholders(null, 
+                        "lp user %magnata_rank_2% parent remove magnata"
+                    )
+                );
+                plugin.getLogger().info("Removido grupo do magnata anterior: " + previousMagnata);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Erro ao remover magnata anterior", e);
+        }
+    }
+
     public void givePeriodicRewards(OfflinePlayer player) {
-        if (player.getName() == null) return;
         executeRewardCommands("periodic", player);
     }
 
-    public void checkMagnata() {
-        plugin.getHistoryManager().checkForNewMagnata();
-    }
-
     private void executeRewardCommands(String rewardType, OfflinePlayer player) {
-        List<String> commands = plugin.getConfig().getStringList("rewards." + rewardType);
-        if (commands.isEmpty()) return;
+        if (player.getName() == null) return;
 
-        String playerName = player.getName();
-        commands.forEach(command -> {
-            try {
-                String formatted = command.replace("%player%", playerName);
-                if (plugin.getConfig().getBoolean("settings.debug", false)) {
-                    plugin.getLogger().info("[DEBUG] Executando recompensa: " + formatted);
-                }
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatted);
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "Erro ao executar recompensa:", e);
-            }
-        });
+        List<String> commands = plugin.getConfig().getStringList("rewards." + rewardType);
+        for (String command : commands) {
+            executeRewardCommand(command.replace("%player%", player.getName()));
+        }
     }
 
-    private void startPeriodicRewards() {
+    private void executeRewardCommand(String command) {
+        try {
+            String formatted = plugin.isPlaceholderApiEnabled() 
+                ? PlaceholderAPI.setPlaceholders(null, command)
+                : command;
+
+            if (plugin.getConfig().getBoolean("settings.debug", false)) {
+                plugin.getLogger().info("[DEBUG] Executando: " + formatted);
+            }
+
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatted);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Erro ao executar recompensa:", e);
+        }
+    }
+
+    private BukkitTask startPeriodicRewards() {
         if (periodicRewardTask != null) {
             periodicRewardTask.cancel();
         }
 
         int interval = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60);
-        if (interval <= 0) return;
+        if (interval <= 0) return null;
 
         long ticks = interval * 60L * 20L;
-        periodicRewardTask = Bukkit.getScheduler().runTaskTimer(plugin,
-            () -> {
-                if (plugin.getHistoryManager().getCurrentMagnata() != null) {
-                    OfflinePlayer player = Bukkit.getOfflinePlayer(
-                        plugin.getHistoryManager().getCurrentMagnata().getPlayerUUID()
-                    );
-                    if (player.getName() != null) {
-                        givePeriodicRewards(player);
-                    }
+        return Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (plugin.getHistoryManager().getCurrentMagnata() != null) {
+                OfflinePlayer player = Bukkit.getOfflinePlayer(
+                    plugin.getHistoryManager().getCurrentMagnata().getPlayerUUID()
+                );
+                if (player.getName() != null) {
+                    givePeriodicRewards(player);
                 }
-            }, ticks, ticks);
+            }
+        }, ticks, ticks);
     }
 
     public void reload() {
