@@ -5,22 +5,24 @@ messages:
   current_magnata:
     - "&e=== &6Magnata Atual &e==="
     - "&6Jogador: &f%player%"
-    - "&6Fortuna: &a$%vault_eco_balance%"
-    - "&6Desde: &f%magnata_since%"
+    - "&6Fortuna: &a$%balance%"
+    - "&6Desde: &f%date%"
     - "&e===================="
 
   broadcast_new_magnata:
     - "&e"
     - "&6&lNOVO MAGNATA!"
-    - "&eParabéns a &6%player% &e(&a$%vault_eco_balance%&e)"
+    - "&eParabéns a &6%player% &e(&a$%balance%&e)"
     - "&e"
 
   history:
     header:
       - "&e=== &6Histórico de Magnatas &e==="
       - "&6Posição | Jogador | Fortuna | Data"
-    entry: "&e%position%. &6%player% &7- &a$%vault_eco_balance% &7(%date%)"
+      - "&e--------------------------------"
+    entry: "&e%position%. &6%player% &7- &a$%balance% &7(%date%)"
     footer:
+      - "&e--------------------------------"
       - "&eTotal: &6%total% magnatas"
       - "&eUse &6/magnata &epara ver o atual"
 
@@ -42,6 +44,7 @@ commands:
 settings:
   check_interval_seconds: 300
   use_placeholderapi: true
+  max_history_size: 10
 
 permissions:
   magnata: "magnata.command"

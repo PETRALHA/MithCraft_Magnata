@@ -1,14 +1,15 @@
 name: MithCraftMagnata
-version: 1.0
-main: com.seuplugin.magnata.MagnataPlugin
+version: 1.0.0
+main: com.mithcraft.magnata.MagnataPlugin
 api-version: 1.21
 commands:
   magnata:
-    description: Mostra o jogador mais rico do servidor
-    aliases: [mag]
+    description: Ver o magnata atual
   magnata hist:
-    description: Mostra o histórico de magnatas
-    aliases: [magnatas, maghist]
+    description: Ver histórico de magnatas
+    aliases: [magnatas]
+  magnata help:
+    description: Mostrar ajuda
 
 permissions:
   magnata.command:

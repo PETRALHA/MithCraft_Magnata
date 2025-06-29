@@ -3,6 +3,7 @@ package com.mithcraft.magnata;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.ess3.api.Economy;
 import net.luckperms.api.LuckPerms;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,37 +16,46 @@ public class MagnataPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Configuração inicial
         saveDefaultConfig();
         saveResource("history.yml", false);
 
-        // Verificar dependências
         if (!setupEconomy() || !setupLuckPerms()) {
             getLogger().severe("Dependências (EssentialsX/LuckPerms) não encontradas!");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
-        // PlaceholderAPI (opcional)
         papiEnabled = getServer().getPluginManager().getPlugin("PlaceholderAPI") != null;
         if (papiEnabled) {
             new MagnataExpansion(this).register();
-            getLogger().info("PlaceholderAPI integrado com sucesso!");
         }
 
-        // Inicializar managers
         historyManager = new HistoryManager(this);
         rewardManager = new RewardManager(this);
 
-        // Registrar comandos
         getCommand("magnata").setExecutor(new MagnataCommand(this));
-        getCommand("magnata").setTabCompleter(new MagnataTabCompleter());
         getCommand("magnata hist").setExecutor(new MagnataHistoryCommand(this));
         getCommand("magnata help").setExecutor(new MagnataHelpCommand(this));
     }
 
-    // Métodos auxiliares (setupEconomy, setupLuckPerms, etc...)
+    private boolean setupEconomy() {
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) return false;
+        economy = rsp.getProvider();
+        return economy != null;
+    }
+
+    private boolean setupLuckPerms() {
+        RegisteredServiceProvider<LuckPerms> rsp = getServer().getServicesManager().getRegistration(LuckPerms.class);
+        if (rsp == null) return false;
+        luckPerms = rsp.getProvider();
+        return luckPerms != null;
+    }
+
+    // Getters
     public boolean isPapiEnabled() { return papiEnabled; }
+    public Economy getEconomy() { return economy; }
+    public LuckPerms getLuckPerms() { return luckPerms; }
     public HistoryManager getHistoryManager() { return historyManager; }
     public RewardManager getRewardManager() { return rewardManager; }
 }

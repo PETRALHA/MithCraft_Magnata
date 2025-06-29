@@ -25,3 +25,8 @@ replay_pid*
 # Temporários
 *.tmp
 .mtj.tmp/
+
+# Arquivos de configuração local
+*.properties
+*.yml
+!src/main/resources/*.yml
