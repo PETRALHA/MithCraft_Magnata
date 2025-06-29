@@ -9,6 +9,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Clean Maven cache
+        run: mvn dependency:purge-local-repository
       - run: mvn clean package -DskipTests
       - uses: actions/upload-artifact@v4
         with:

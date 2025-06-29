@@ -16,12 +16,11 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Versões das dependências -->
-        <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
+        <paper.version>1.20.4-R0.1-SNAPSHOT</paper.version> <!-- Alterado para versão estável -->
         <placeholderapi.version>2.11.6</placeholderapi.version>
         <luckperms.version>5.4</luckperms.version>
     </properties>
 
-    <!-- REPOSITÓRIOS -->
     <repositories>
         <!-- PaperMC -->
         <repository>
@@ -29,20 +28,19 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         
-        <!-- PlaceholderAPI (URL oficial corrigida) -->
+        <!-- PlaceholderAPI -->
         <repository>
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
         
-        <!-- Maven Central (fallback para LuckPerms) -->
+        <!-- Maven Central -->
         <repository>
             <id>central</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
 
-    <!-- DEPENDÊNCIAS -->
     <dependencies>
         <!-- Paper API -->
         <dependency>
@@ -58,7 +56,6 @@
             <artifactId>placeholderapi</artifactId>
             <version>${placeholderapi.version}</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
         
         <!-- LuckPerms -->
@@ -72,7 +69,6 @@
 
     <build>
         <plugins>
-            <!-- Compilador Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -87,7 +83,6 @@
                 </configuration>
             </plugin>
             
-            <!-- Plugin para empacotamento -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
