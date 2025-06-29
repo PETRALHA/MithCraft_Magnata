@@ -13,24 +13,24 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <!-- REPOSITÓRIOS OFICIAIS -->
     <repositories>
         <!-- PaperMC -->
         <repository>
-            <id>papermc-repo</id>
+            <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <!-- PlaceholderAPI -->
+        
+        <!-- PlaceholderAPI (EXCLUSIVO para Placeholder) -->
         <repository>
-            <id>placeholderapi-repo</id>
+            <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
-        <!-- LuckPerms Mirror -->
-        <repository>
-            <id>luckperms-mirror</id>
-            <url>https://maven.luckperms.io/</url>
-        </repository>
+        
+        <!-- LuckPerms (sem repositório extra - usa Maven Central) -->
     </repositories>
 
+    <!-- DEPENDÊNCIAS -->
     <dependencies>
         <!-- Paper API -->
         <dependency>
@@ -40,7 +40,7 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- LuckPerms -->
+        <!-- LuckPerms (do Maven Central) -->
         <dependency>
             <groupId>net.luckperms</groupId>
             <artifactId>api</artifactId>

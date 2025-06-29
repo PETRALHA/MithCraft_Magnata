@@ -16,7 +16,12 @@ jobs:
         cache: 'maven'
     
     - name: Build with Maven
-      run: mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=3
+      run: |
+        # Baixa dependências críticas primeiro
+        mvn dependency:get -Dartifact=me.clip:placeholderapi:2.11.3 -DremoteRepositories=placeholderapi::::https://repo.extendedclip.com/content/repositories/placeholderapi/
+        mvn dependency:get -Dartifact=net.luckperms:api:5.4
+        # Build principal
+        mvn clean package -DskipTests
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
