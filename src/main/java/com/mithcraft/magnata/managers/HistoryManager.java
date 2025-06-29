@@ -8,10 +8,8 @@ import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class HistoryManager {
     private final MagnataPlugin plugin;
@@ -26,7 +24,9 @@ public class HistoryManager {
     public void checkForNewMagnata() {
         if (plugin.getEconomy() == null) return;
 
-        OfflinePlayer richestPlayer = Bukkit.getOnlinePlayers().stream()
+        // Verifica todos os jogadores (online e offline)
+        OfflinePlayer richestPlayer = Arrays.stream(Bukkit.getOfflinePlayers())
+                .filter(p -> p.hasPlayedBefore())
                 .max(Comparator.comparingDouble(p -> plugin.getEconomy().getBalance(p)))
                 .orElse(null);
 
@@ -85,6 +85,6 @@ public class HistoryManager {
     }
 
     public void reload() {
-        // Implementar se necessário
+        // Implementação de recarregamento se necessário
     }
 }
