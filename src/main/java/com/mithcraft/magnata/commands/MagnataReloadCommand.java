@@ -20,7 +20,7 @@ public class MagnataReloadCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.reloadPlugin();
+        plugin.reload();
         sender.sendMessage(plugin.getMessages().getString("prefix") + "§aPlugin recarregado com sucesso!");
         return true;
     }

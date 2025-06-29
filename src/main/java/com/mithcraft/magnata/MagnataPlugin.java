@@ -126,8 +126,8 @@ public final class MagnataPlugin extends JavaPlugin {
     public void reload() {
         reloadConfig();
         messages = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
-        historyManager.reload();
-        rewardManager.reload();
+        if (historyManager != null) historyManager.reload();
+        if (rewardManager != null) rewardManager.reload();
     }
 
     private void shutdown(String reason) {

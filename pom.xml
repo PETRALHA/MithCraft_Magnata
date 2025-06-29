@@ -8,7 +8,7 @@
     <artifactId>MithCraftMagnata</artifactId>
     <version>1.0.1</version>
     <name>MithCraftMagnata</name>
-    <description>Plugin de sistema Magnata para Minecraft</description>
+    <description>Plugin de sistema Magnata para servidores Minecraft</description>
 
     <properties>
         <java.version>17</java.version>
@@ -16,20 +16,75 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
+        <vault.version>1.7.1</vault.version>
+        <luckperms.version>5.4</luckperms.version>
+        <placeholderapi.version>2.11.6</placeholderapi.version>
     </properties>
 
     <repositories>
+        <!-- PaperMC -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        
+        <!-- Vault (JitPack) -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        
+        <!-- PlaceholderAPI (Atualizado) -->
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.helpch.at/repository/releases/</url>
+        </repository>
+        
+        <!-- LuckPerms (Maven Central) -->
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <!-- Paper API -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>${paper.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- Vault API -->
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>${vault.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- LuckPerms API -->
+        <dependency>
+            <groupId>net.luckperms</groupId>
+            <artifactId>api</artifactId>
+            <version>${luckperms.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- PlaceholderAPI -->
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>${placeholderapi.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- Annotations para desenvolvimento -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>24.0.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -38,7 +93,7 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <filtering>false</filtering>
+                <filtering>true</filtering>
                 <includes>
                     <include>**/*.yml</include>
                     <include>**/*.yaml</include>
@@ -47,6 +102,7 @@
         </resources>
 
         <plugins>
+            <!-- Compilador Java -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -54,9 +110,14 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <compilerArgs>
+                        <arg>-Xlint:unchecked</arg>
+                        <arg>-Xlint:deprecation</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             
+            <!-- Plugin para empacotamento -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -67,8 +128,34 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            
+            <!-- Plugin para recursos -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>yml</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>yaml</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
             </plugin>
         </plugins>
     </build>

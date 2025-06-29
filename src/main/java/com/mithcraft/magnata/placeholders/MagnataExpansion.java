@@ -1,6 +1,7 @@
 package com.mithcraft.magnata.placeholders;
 
 import com.mithcraft.magnata.MagnataPlugin;
+import com.mithcraft.magnata.models.MagnataRecord;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
