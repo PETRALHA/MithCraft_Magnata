@@ -64,7 +64,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private boolean loadConfigurations() {
+    public boolean loadConfigurations() {
         try {
             // Configuração principal
             saveDefaultConfig();
@@ -89,7 +89,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private boolean setupEconomy() {
+    public boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             getLogger().severe("Vault não encontrado!");
             return false;
@@ -106,7 +106,7 @@ public final class MagnataPlugin extends JavaPlugin {
         return true;
     }
 
-    private boolean setupLuckPerms() {
+    public boolean setupLuckPerms() {
         try {
             RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
             if (provider != null) {
@@ -121,7 +121,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private void setupPlaceholderAPI() {
+    public void setupPlaceholderAPI() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new MagnataExpansion(this).register();
             placeholderApiEnabled = true;

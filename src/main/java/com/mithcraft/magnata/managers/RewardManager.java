@@ -4,7 +4,6 @@ import com.mithcraft.magnata.MagnataPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
-
 import java.util.List;
 import java.util.logging.Level;
 
@@ -27,16 +26,20 @@ public class RewardManager {
         executeRewardCommands("periodic", player);
     }
 
+    public void checkMagnata() {
+        plugin.getHistoryManager().checkForNewMagnata();
+    }
+
     private void executeRewardCommands(String rewardType, OfflinePlayer player) {
-        List<String> commands = plugin.getMainConfig().getStringList("rewards." + rewardType + ".commands");
+        List<String> commands = plugin.getConfig().getStringList("rewards." + rewardType);
         if (commands.isEmpty()) return;
 
         String playerName = player.getName();
         commands.forEach(command -> {
             try {
                 String formatted = command.replace("%player%", playerName);
-                if (plugin.getMainConfig().getBoolean("settings.debug", false)) {
-                    plugin.getLogger().info("[DEBUG] Executando comando: " + formatted);
+                if (plugin.getConfig().getBoolean("settings.debug", false)) {
+                    plugin.getLogger().info("[DEBUG] Executando recompensa: " + formatted);
                 }
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatted);
             } catch (Exception e) {
@@ -50,7 +53,7 @@ public class RewardManager {
             periodicRewardTask.cancel();
         }
 
-        int interval = plugin.getMainConfig().getInt("rewards.periodic.interval_minutes", 60);
+        int interval = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60);
         if (interval <= 0) return;
 
         long ticks = interval * 60L * 20L;
