@@ -4,7 +4,7 @@
     <artifactId>MithCraftMagnata</artifactId>
     <version>1.0.0</version>
     <name>MithCraftMagnata</name>
-    <description>Plugin de sistema Magnata para Minecraft</description>
+    <description>Plugin de sistema Magnata para Minecraft com PlaceholderAPI</description>
 
     <properties>
         <java.version>17</java.version>
@@ -14,18 +14,22 @@
     </properties>
 
     <repositories>
+        <!-- PaperMC -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <!-- EssentialsX -->
         <repository>
             <id>essentialsx-repo</id>
             <url>https://repo.essentialsx.net/releases/</url>
         </repository>
+        <!-- LuckPerms -->
         <repository>
             <id>luckperms-repo</id>
             <url>https://repo.luckperms.io/</url>
         </repository>
+        <!-- PlaceholderAPI -->
         <repository>
             <id>placeholderapi-repo</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
@@ -33,30 +37,36 @@
     </repositories>
 
     <dependencies>
+        <!-- Paper API -->
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.21-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- EssentialsX -->
         <dependency>
             <groupId>net.essentialsx</groupId>
             <artifactId>EssentialsX</artifactId>
             <version>2.20.0</version>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- LuckPerms -->
         <dependency>
             <groupId>net.luckperms</groupId>
             <artifactId>api</artifactId>
             <version>5.4</version>
             <scope>provided</scope>
         </dependency>
+        
+        <!-- PlaceholderAPI -->
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
             <version>2.11.3</version>
             <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -69,12 +79,18 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <compilerArgs>
+                        <arg>-Xlint:unchecked</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.5.1</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>

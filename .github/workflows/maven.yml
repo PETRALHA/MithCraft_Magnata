@@ -17,8 +17,8 @@ jobs:
     
     - name: Build with Maven
       run: |
-        mvn dependency:go-offline
-        mvn clean package -DskipTests
+        mvn dependency:go-offline -Dmaven.main.skip -Dmaven.deploy.skip -Dmaven.test.skip
+        mvn clean package -DskipTests -Dmaven.wagon.http.retryHandler.count=3
         
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
