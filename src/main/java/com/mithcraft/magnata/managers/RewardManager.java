@@ -13,48 +13,53 @@ public class RewardManager {
 
     public RewardManager(MagnataPlugin plugin) {
         this.plugin = plugin;
-        startPeriodicRewards();
+        this.periodicRewardTask = startPeriodicRewards();
     }
 
     public void giveBecomeMagnataRewards(OfflinePlayer player) {
-        executeRewardCommands(plugin.getConfig().getStringList("rewards.on_become"), player);
+        executeRewardCommands("on_become", player);
     }
 
-    public void checkPeriodicRewards() {
-        if (plugin.getHistoryManager().getCurrentMagnata() != null) {
-            OfflinePlayer player = Bukkit.getOfflinePlayer(
-                plugin.getHistoryManager().getCurrentMagnata().getPlayerUUID()
-            );
-            givePeriodicRewards(player);
-        }
+    public void givePeriodicRewards(OfflinePlayer player) {
+        executeRewardCommands("periodic", player);
     }
 
-    private void givePeriodicRewards(OfflinePlayer player) {
-        executeRewardCommands(plugin.getConfig().getStringList("rewards.periodic.commands"), player);
-    }
+    private void executeRewardCommands(String rewardType, OfflinePlayer player) {
+        if (player.getName() == null) return;
 
-    private void executeRewardCommands(List<String> commands, OfflinePlayer player) {
+        List<String> commands = plugin.getMainConfig().getStringList("rewards." + rewardType + ".commands");
         String playerName = player.getName();
-        if (playerName == null) return;
 
         commands.forEach(command -> {
-            String formattedCommand = command.replace("%player%", playerName);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formattedCommand);
+            try {
+                String formatted = command.replace("%player%", playerName);
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), formatted);
+            } catch (Exception e) {
+                plugin.getLogger().warning("Erro ao executar recompensa: " + e.getMessage());
+            }
         });
     }
 
-    private void startPeriodicRewards() {
-        int interval = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60) * 60 * 20;
-        if (interval <= 0) return;
+    private BukkitTask startPeriodicRewards() {
+        int interval = plugin.getMainConfig().getInt("rewards.periodic.interval_minutes", 60);
+        if (interval <= 0) return null;
 
-        periodicRewardTask = Bukkit.getScheduler().runTaskTimer(plugin, 
-            this::checkPeriodicRewards, interval, interval);
+        long ticks = interval * 60L * 20L;
+        return Bukkit.getScheduler().runTaskTimer(plugin,
+            () -> {
+                if (plugin.getHistoryManager().getCurrentMagnata() != null) {
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(
+                        plugin.getHistoryManager().getCurrentMagnata().getPlayerUUID()
+                    );
+                    givePeriodicRewards(player);
+                }
+            }, ticks, ticks);
     }
 
     public void reload() {
         if (periodicRewardTask != null) {
             periodicRewardTask.cancel();
         }
-        startPeriodicRewards();
+        this.periodicRewardTask = startPeriodicRewards();
     }
 }

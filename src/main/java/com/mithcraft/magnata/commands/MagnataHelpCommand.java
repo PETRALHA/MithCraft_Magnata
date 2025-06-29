@@ -17,8 +17,10 @@ public class MagnataHelpCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        List<String> helpMessages = plugin.getConfig().getStringList("messages.help");
-        helpMessages.forEach(sender::sendMessage);
+        String prefix = plugin.getMessages().getString("prefix", "&6[Magnata] &7");
+        List<String> helpMessages = plugin.getMessages().getStringList("help");
+        
+        helpMessages.forEach(line -> sender.sendMessage(line.replace("%prefix%", prefix)));
         return true;
     }
 }

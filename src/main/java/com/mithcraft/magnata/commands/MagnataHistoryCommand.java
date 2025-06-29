@@ -18,20 +18,20 @@ public class MagnataHistoryCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!sender.hasPermission(plugin.getConfig().getString("permissions.magnata_history", "magnata.history"))) {
-            sender.sendMessage(plugin.getMessages().getString("prefix") + "§cVocê não tem permissão para ver o histórico.");
+        String prefix = plugin.getMessages().getString("prefix", "&6[Magnata] &7");
+        
+        if (!sender.hasPermission(plugin.getMainConfig().getString("permissions.magnata_history", "magnata.history"))) {
+            sender.sendMessage(prefix + plugin.getMessages().getString("errors.no_permission", "&cVocê não tem permissão!"));
             return true;
         }
 
         List<MagnataRecord> history = plugin.getHistoryManager().getHistory();
-        List<String> header = plugin.getConfig().getStringList("messages.history.header");
-        String entryFormat = plugin.getConfig().getString("messages.history.entry");
-        List<String> footer = plugin.getConfig().getStringList("messages.history.footer");
+        List<String> header = plugin.getMessages().getStringList("history.header");
+        String entryFormat = plugin.getMessages().getString("history.entry");
+        List<String> footer = plugin.getMessages().getStringList("history.footer");
 
-        // Envia cabeçalho
-        header.forEach(sender::sendMessage);
+        header.forEach(line -> sender.sendMessage(line.replace("%prefix%", prefix)));
 
-        // Envia entradas
         for (int i = 0; i < history.size(); i++) {
             MagnataRecord record = history.get(i);
             String entry = entryFormat
@@ -42,9 +42,10 @@ public class MagnataHistoryCommand implements CommandExecutor {
             sender.sendMessage(entry);
         }
 
-        // Envia rodapé
-        footer.forEach(msg -> sender.sendMessage(msg.replace("%total%", String.valueOf(history.size()))));
-
+        footer.forEach(msg -> sender.sendMessage(msg
+                .replace("%total%", String.valueOf(history.size()))
+                .replace("%prefix%", prefix)));
+        
         return true;
     }
 }

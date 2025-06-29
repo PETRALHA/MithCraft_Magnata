@@ -1,24 +1,34 @@
 name: MithCraftMagnata
-version: 1.0.0
+version: 1.0.1
 main: com.mithcraft.magnata.MagnataPlugin
 api-version: "1.21"
 authors: [PETRALHA]
+description: Sistema de Magnata para servidores Minecraft
 
 commands:
   magnata:
-    description: Comando principal do sistema Magnata
+    description: Verifica o magnata atual
     aliases: [mg]
+    usage: /magnata [help|hist|reload]
   magnata-history:
-    description: Mostra o histórico de Magnatas
+    description: Mostra o histórico
+    aliases: [hist]
     usage: /magnata hist
-    permission: magnata.history
 
 permissions:
-  magnata.admin:
-    description: Permissão de administrador
-    default: op
-  magnata.history:
-    description: Permissão para ver histórico
+  magnata.command:
+    description: Comandos básicos
     default: true
+  magnata.history:
+    description: Ver histórico
+    default: true
+  magnata.reload:
+    description: Recarregar plugin
+    default: op
+  magnata.admin:
+    description: Todas as permissões
+    default: op
+    children:
+      magnata.*: true
 
 softdepend: [Vault, LuckPerms, PlaceholderAPI]

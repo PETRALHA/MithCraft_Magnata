@@ -23,22 +23,16 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (args.length == 0) {
-            return helpCommand.onCommand(sender, cmd, label, args);
+        String prefix = plugin.getMessages().getString("prefix", "&6[Magnata] &7");
+        
+        if (!sender.hasPermission(plugin.getMainConfig().getString("permissions.magnata_reload", "magnata.reload"))) {
+            sender.sendMessage(prefix + plugin.getMessages().getString("errors.no_permission", "&cVocê não tem permissão!"));
+            return true;
         }
 
-        switch (args[0].toLowerCase()) {
-            case "help":
-                return helpCommand.onCommand(sender, cmd, label, args);
-            case "hist":
-            case "history":
-                return historyCommand.onCommand(sender, cmd, label, args);
-            case "reload":
-                return reloadCommand.onCommand(sender, cmd, label, args);
-            default:
-                sender.sendMessage("§cComando desconhecido. Use /magnata help para ajuda.");
-                return true;
-        }
+        plugin.reload();
+        sender.sendMessage(prefix + plugin.getMessages().getString("reload_success", "&aConfigurações recarregadas!"));
+        return true;
     }
 
     @Override

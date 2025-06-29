@@ -28,18 +28,31 @@ public class MagnataExpansion extends PlaceholderExpansion {
     }
 
     @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
     public String onRequest(OfflinePlayer player, @NotNull String params) {
-        if (plugin.getHistoryManager().getCurrentMagnata() == null) {
+        if (plugin.getHistoryManager() == null || 
+            plugin.getHistoryManager().getCurrentMagnata() == null) {
             return "Nenhum";
         }
 
+        MagnataRecord magnata = plugin.getHistoryManager().getCurrentMagnata();
+        
         switch (params.toLowerCase()) {
             case "name":
-                return plugin.getHistoryManager().getCurrentMagnata().getPlayerName();
+                return magnata.getPlayerName();
             case "balance":
-                return String.format("%,.2f", plugin.getHistoryManager().getCurrentMagnata().getBalance());
+                return String.format("%,.2f", magnata.getBalance());
             case "date":
-                return plugin.getHistoryManager().getCurrentMagnata().getFormattedDate();
+                return magnata.getFormattedDate();
+            case "all":
+                return String.format("%s (%.2f) em %s",
+                    magnata.getPlayerName(),
+                    magnata.getBalance(),
+                    magnata.getFormattedDate());
             default:
                 return null;
         }

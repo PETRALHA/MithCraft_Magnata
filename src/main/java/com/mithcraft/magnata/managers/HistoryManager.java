@@ -4,12 +4,10 @@ import com.mithcraft.magnata.MagnataPlugin;
 import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class HistoryManager {
     private final MagnataPlugin plugin;
@@ -22,11 +20,13 @@ public class HistoryManager {
     }
 
     public void checkForNewMagnata() {
-        if (plugin.getEconomy() == null) return;
+        if (plugin.getEconomy() == null) {
+            plugin.getLogger().warning("Economia não disponível para verificar magnata");
+            return;
+        }
 
-        // Verifica todos os jogadores (online e offline)
         OfflinePlayer richestPlayer = Arrays.stream(Bukkit.getOfflinePlayers())
-                .filter(p -> p.hasPlayedBefore())
+                .filter(OfflinePlayer::hasPlayedBefore)
                 .max(Comparator.comparingDouble(p -> plugin.getEconomy().getBalance(p)))
                 .orElse(null);
 
@@ -34,7 +34,9 @@ public class HistoryManager {
 
         double balance = plugin.getEconomy().getBalance(richestPlayer);
         
-        if (currentMagnata == null || !currentMagnata.getPlayerUUID().equals(richestPlayer.getUniqueId())) {
+        if (currentMagnata == null || 
+            !currentMagnata.getPlayerUUID().equals(richestPlayer.getUniqueId()) ||
+            plugin.getMainConfig().getBoolean("settings.force_recheck", false)) {
             setNewMagnata(richestPlayer, balance);
         }
     }
@@ -49,26 +51,31 @@ public class HistoryManager {
 
         if (currentMagnata != null) {
             history.add(0, currentMagnata);
+            trimHistory();
         }
 
         currentMagnata = newMagnata;
-        
-        // Remove registros antigos
-        int maxHistory = plugin.getConfig().getInt("settings.max_history_size", 10);
+        giveRewardsAndNotify(player, balance);
+    }
+
+    private void trimHistory() {
+        int maxHistory = plugin.getMainConfig().getInt("settings.max_history_size", 10);
         while (history.size() > maxHistory) {
             history.remove(history.size() - 1);
         }
-        
-        // Dar recompensas
+    }
+
+    private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
         plugin.getRewardManager().giveBecomeMagnataRewards(player);
         
-        // Broadcast
-        List<String> broadcastMessages = plugin.getConfig().getStringList("messages.broadcast_new_magnata");
-        broadcastMessages.forEach(msg -> {
-            String formatted = msg.replace("%player%", player.getName())
-                                .replace("%balance%", String.format("%,.2f", balance));
-            Bukkit.broadcastMessage(formatted);
-        });
+        String playerName = player.getName() != null ? player.getName() : "JogadorDesconhecido";
+        String balanceFormatted = String.format("%,.2f", balance);
+        
+        List<String> broadcastMessages = plugin.getMessages().getStringList("broadcast_new_magnata");
+        broadcastMessages.forEach(msg -> Bukkit.broadcastMessage(
+            msg.replace("%player%", playerName)
+              .replace("%balance%", balanceFormatted)
+        ));
     }
 
     public List<MagnataRecord> getHistory() {
@@ -77,7 +84,7 @@ public class HistoryManager {
             fullHistory.add(currentMagnata);
         }
         fullHistory.addAll(history);
-        return fullHistory;
+        return Collections.unmodifiableList(fullHistory);
     }
 
     public MagnataRecord getCurrentMagnata() {
@@ -85,6 +92,6 @@ public class HistoryManager {
     }
 
     public void reload() {
-        // Implementação de recarregamento se necessário
+        // Implementação futura para carregar de arquivo se necessário
     }
 }

@@ -2,7 +2,6 @@ package com.mithcraft.magnata;
 
 import com.mithcraft.magnata.commands.*;
 import com.mithcraft.magnata.managers.*;
-import com.mithcraft.magnata.placeholders.MagnataExpansion;
 import net.milkbowl.vault.economy.Economy;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
@@ -12,7 +11,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.logging.Level;
 
 public final class MagnataPlugin extends JavaPlugin {
@@ -25,47 +25,33 @@ public final class MagnataPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            logStartup();
-            
             // 1. Carregar configurações
             if (!loadConfigurations()) {
-                disablePlugin("Falha ao carregar configurações");
+                shutdown("Falha ao carregar configurações");
                 return;
             }
 
-            // 2. Verificar dependências essenciais
+            // 2. Verificar dependências
             if (!setupEconomy() || !setupLuckPerms()) {
-                disablePlugin("Dependências essenciais não encontradas");
+                shutdown("Dependências não encontradas");
                 return;
             }
 
             // 3. Inicializar componentes
             initializeManagers();
             registerCommands();
-            
-            // 4. Integrações opcionais
-            setupOptionalIntegrations();
-            
-            // 5. Agendar tarefas
-            scheduleTasks();
-            
-            getLogger().log(Level.INFO, "§aPlugin ativado com sucesso!");
 
+            getLogger().info("§aPlugin ativado com sucesso!");
+            
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "§cErro crítico durante a inicialização:", e);
-            disablePlugin("Erro crítico");
+            getLogger().log(Level.SEVERE, "Erro crítico:", e);
+            shutdown("Erro na inicialização");
         }
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("Desativando MithCraft Magnata...");
-        // Limpeza de recursos se necessário
-    }
-
-    private void logStartup() {
-        getLogger().info("§6=== MithCraft Magnata v" + getDescription().getVersion() + " ===");
-        getLogger().info("§6Carregando plugin...");
+        getLogger().info("Desativando plugin...");
     }
 
     private boolean loadConfigurations() {
@@ -76,42 +62,35 @@ public final class MagnataPlugin extends JavaPlugin {
             // Arquivo de mensagens
             File messagesFile = new File(getDataFolder(), "messages.yml");
             if (!messagesFile.exists()) {
-                saveResource("messages.yml", false);
-                getLogger().info("Arquivo messages.yml criado");
+                try (InputStream in = getResource("messages.yml")) {
+                    if (in != null) {
+                        Files.copy(in, messagesFile.toPath());
+                    } else {
+                        getLogger().warning("messages.yml padrão não encontrado, criando novo...");
+                        messagesFile.createNewFile();
+                    }
+                }
             }
             messages = YamlConfiguration.loadConfiguration(messagesFile);
             
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao carregar configurações:", e);
+            getLogger().log(Level.SEVERE, "Erro ao carregar configs:", e);
             return false;
         }
     }
 
     private boolean setupEconomy() {
         try {
-            if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-                getLogger().severe("Vault não encontrado!");
-                return false;
-            }
-
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp == null) {
-                getLogger().severe("Nenhum provedor de economia encontrado!");
+                getLogger().severe("Vault/Economy não encontrado!");
                 return false;
             }
-
             economy = rsp.getProvider();
-            if (economy == null) {
-                getLogger().severe("Falha ao obter provedor de economia");
-                return false;
-            }
-
-            getLogger().info("Economia conectada: " + economy.getName());
             return true;
-
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao configurar economia:", e);
+            getLogger().log(Level.SEVERE, "Erro na economia:", e);
             return false;
         }
     }
@@ -121,76 +100,38 @@ public final class MagnataPlugin extends JavaPlugin {
             RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
             if (provider != null) {
                 this.luckPerms = provider.getProvider();
-                getLogger().info("LuckPerms conectado com sucesso");
-                return true;
             }
-            getLogger().warning("LuckPerms não encontrado (algumas features serão desativadas)");
-            return true; // Não é essencial
-
+            return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao configurar LuckPerms:", e);
-            return false;
+            getLogger().log(Level.WARNING, "LuckPerms não encontrado", e);
+            return true; // Não é essencial
         }
     }
 
     private void initializeManagers() {
         this.historyManager = new HistoryManager(this);
         this.rewardManager = new RewardManager(this);
-        getLogger().info("Managers inicializados");
     }
 
     private void registerCommands() {
         try {
-            MagnataCommand magnataCommand = new MagnataCommand(this);
-            getCommand("magnata").setExecutor(magnataCommand);
-            getCommand("magnata").setTabCompleter(magnataCommand);
-            getLogger().info("Comandos registrados");
+            MagnataCommand cmd = new MagnataCommand(this);
+            getCommand("magnata").setExecutor(cmd);
+            getCommand("magnata").setTabCompleter(cmd);
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Erro ao registrar comandos:", e);
         }
     }
 
-    private void setupOptionalIntegrations() {
-        // PlaceholderAPI
-        if (getConfig().getBoolean("settings.use_placeholderapi", true)) {
-            if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-                try {
-                    new MagnataExpansion(this).register();
-                    getLogger().info("PlaceholderAPI integrado");
-                } catch (Exception e) {
-                    getLogger().warning("Não foi possível registrar PlaceholderAPI: " + e.getMessage());
-                }
-            }
-        }
+    public void reload() {
+        reloadConfig();
+        messages = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
+        historyManager.reload();
+        rewardManager.reload();
     }
 
-    private void scheduleTasks() {
-        try {
-            int interval = getConfig().getInt("settings.check_interval_seconds", 300) * 20;
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-                historyManager.checkForNewMagnata();
-                rewardManager.checkPeriodicRewards();
-            }, interval, interval);
-            getLogger().info("Tarefas agendadas (intervalo: " + interval/20 + "s)");
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao agendar tarefas:", e);
-        }
-    }
-
-    public void reloadPlugin() {
-        try {
-            reloadConfig();
-            messages = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
-            historyManager.reload();
-            rewardManager.reload();
-            getLogger().info("Configurações recarregadas");
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao recarregar configurações:", e);
-        }
-    }
-
-    private void disablePlugin(String reason) {
-        getLogger().severe("Desativando plugin - Motivo: " + reason);
+    private void shutdown(String reason) {
+        getLogger().severe("Desativando: " + reason);
         Bukkit.getPluginManager().disablePlugin(this);
     }
 
@@ -200,4 +141,5 @@ public final class MagnataPlugin extends JavaPlugin {
     public Economy getEconomy() { return economy; }
     public LuckPerms getLuckPerms() { return luckPerms; }
     public FileConfiguration getMessages() { return messages; }
+    public FileConfiguration getMainConfig() { return getConfig(); }
 }

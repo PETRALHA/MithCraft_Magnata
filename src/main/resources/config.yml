@@ -1,44 +1,8 @@
-# Configurações do MithCraft Magnata
-messages:
-  prefix: "&6[Magnata] &7"
-  
-  current_magnata:
-    - "&e=== &6Magnata Atual &e==="
-    - "&6Jogador: &f%player%"
-    - "&6Fortuna: &a$%balance%"
-    - "&6Desde: &f%date%"
-    - "&e===================="
-
-  broadcast_new_magnata:
-    - "&e"
-    - "&6&lNOVO MAGNATA!"
-    - "&eParabéns a &6%player% &e(&a$%balance%&e)"
-    - "&e"
-
-  history:
-    header:
-      - "&e=== &6Histórico de Magnatas &e==="
-      - "&6Posição | Jogador | Fortuna | Data"
-      - "&e--------------------------------"
-    entry: "&e%position%. &6%player% &7- &a$%balance% &7(%date%)"
-    footer:
-      - "&e--------------------------------"
-      - "&eTotal: &6%total% magnatas"
-      - "&eUse &6/magnata &epara ver o atual"
-
-  help:
-    - "&e=== &6Ajuda do Magnata &e==="
-    - "&6/magnata &7- Mostra o magnata atual"
-    - "&6/magnata hist &7- Mostra o histórico"
-    - "&6/magnata reload &7- Recarrega o plugin"
-    - "&6/magnata help &7- Mostra esta ajuda"
-    - "&e======================"
-
+# Configurações de funcionamento
 rewards:
   on_become:
     - "eco give %player% 1000"
     - "lp user %player% permission set kit.magnata"
-    - "broadcast &aNovo magnata: %player% recebeu recompensas!"
   periodic:
     interval_minutes: 60
     commands:
@@ -47,12 +11,13 @@ rewards:
 
 commands:
   main: "magnata"
-  history: "magnata hist"
+  history: "hist"
 
 settings:
   check_interval_seconds: 300
   use_placeholderapi: true
   max_history_size: 10
+  debug: false
 
 permissions:
   magnata: "magnata.command"
