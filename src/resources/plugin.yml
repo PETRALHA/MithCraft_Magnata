@@ -1,19 +1,21 @@
 name: MithCraftMagnata
 version: 1.0.0
 main: com.mithcraft.magnata.MagnataPlugin
-api-version: 1.20
+api-version: "1.21"
 authors: [PETRALHA]
 
 commands:
   magnata:
     description: Comando principal do sistema Magnata
+    aliases: [mg]
   magnata-history:
-    description: Mostra o histórico de magnatas
+    description: Mostra o histórico de Magnatas
+    usage: /magnata hist
     permission: magnata.history
 
 permissions:
   magnata.admin:
-    description: Permissão de administrador do Magnata
+    description: Permissão de administrador
     default: op
   magnata.history:
     description: Permissão para ver histórico

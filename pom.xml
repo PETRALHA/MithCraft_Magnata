@@ -15,7 +15,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <paper.version>1.20.4-R0.1-SNAPSHOT</paper.version>
+        <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
         <placeholderapi.version>2.11.6</placeholderapi.version>
         <luckperms.version>5.4</luckperms.version>
         <vault.version>1.7.1</vault.version>
