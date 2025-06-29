@@ -2,14 +2,16 @@ package com.mithcraft.magnata.managers;
 
 import com.mithcraft.magnata.MagnataPlugin;
 import com.mithcraft.magnata.models.MagnataRecord;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -85,11 +87,14 @@ public class HistoryManager {
         String playerName = player.getName();
         String balanceFormatted = plugin.formatCurrency(balance);
         
-        plugin.getMessages().getStringList("broadcast_new_magnata").forEach(msg -> 
-            Bukkit.broadcastMessage(plugin.formatMessage(msg)
-                .replace("%player%", playerName)
-                .replace("%balance%", balanceFormatted))
-        );
+        plugin.getMessages().getStringList("broadcast_new_magnata").forEach(msg -> {
+            Component message = LegacyComponentSerializer.legacySection().deserialize(
+                plugin.formatMessage(msg)
+                    .replace("%player%", playerName)
+                    .replace("%balance%", balanceFormatted)
+            );
+            Bukkit.getServer().sendMessage(message);
+        });
     }
 
     private void loadHistory() {
@@ -97,14 +102,17 @@ public class HistoryManager {
 
         try {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(historyFile);
+            
+            // Desserialização corrigida
             if (config.contains("current")) {
-                currentMagnata = MagnataRecord.deserialize(config.getConfigurationSection("current"));
+                Map<String, Object> currentData = config.getConfigurationSection("current").getValues(false);
+                currentMagnata = MagnataRecord.deserialize(currentData);
             }
             
             if (config.contains("history")) {
-                config.getMapList("history").forEach(map -> 
-                    history.add(MagnataRecord.deserialize(map))
-                );
+                for (Map<?, ?> map : config.getMapList("history")) {
+                    history.add(MagnataRecord.deserialize((Map<String, Object>) map));
+                }
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Erro ao carregar histórico", e);
@@ -116,7 +124,7 @@ public class HistoryManager {
             YamlConfiguration config = new YamlConfiguration();
             
             if (currentMagnata != null) {
-                config.set("current", currentMagnata.serialize());
+                config.createSection("current", currentMagnata.serialize());
             }
             
             List<Map<String, Object>> historyData = new ArrayList<>();

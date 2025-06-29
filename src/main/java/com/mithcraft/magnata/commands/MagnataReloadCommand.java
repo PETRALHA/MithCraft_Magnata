@@ -22,24 +22,31 @@ public class MagnataReloadCommand implements CommandExecutor {
         }
 
         try {
-            // Recarregar configurações
-            plugin.reloadConfig();
-            plugin.getMessages().reload();
-            plugin.getHistoryManager().reload();
+            // Processo de recarregamento completo
+            plugin.reloadConfig(); // Recarrega config.yml
+            plugin.loadConfigurations(); // Recarrega messages.yml
             
-            // Verificar integrações
+            // Recarrega managers
+            plugin.getHistoryManager().reload();
+            plugin.getRewardManager().reload();
+            
+            // Reconecta com dependências
             plugin.setupEconomy();
             plugin.setupPlaceholderAPI();
-            
+
+            // Mensagem de sucesso
             sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.reload_success")));
+            return true;
         } catch (Exception e) {
-            plugin.getLogger().severe("Erro ao recarregar o plugin: " + e.getMessage());
+            // Tratamento de erro detalhado
+            plugin.getLogger().severe("Erro durante o reload: " + e.getMessage());
             sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.reload_failure")));
+            
+            // Log adicional no modo debug
             if (plugin.getConfig().getBoolean("settings.debug", false)) {
                 e.printStackTrace();
             }
+            return false;
         }
-        
-        return true;
     }
 }
