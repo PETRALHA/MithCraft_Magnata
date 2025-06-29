@@ -16,9 +16,18 @@ public class RewardManager {
         startPeriodicRewards();
     }
 
-    public void giveBecomeMagnataRewards(OfflinePlayer player) {
-        if (player.getName() == null) return;
-        executeRewardCommands("on_become", player);
+    public void giveBecomeMagnataRewards(OfflinePlayer newMagnata) {
+        // Remover o magnata anterior
+        MagnataRecord previous = plugin.getHistoryManager().getHistory().size() > 0 
+            ? plugin.getHistoryManager().getHistory().get(0) 
+            : null;
+        
+        if (previous != null) {
+            executeRewardCommand("lp user " + previous.getPlayerName() + " parent remove magnata");
+        }
+
+        // Dar recompensas ao novo
+        executeRewardCommands("on_become", newMagnata);
     }
 
     public void givePeriodicRewards(OfflinePlayer player) {

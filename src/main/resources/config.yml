@@ -13,7 +13,8 @@ commands:
 rewards:
   on_become:
     - "eco give %player% 1000"
-    - "lp user %player% permission set kit.magnata"
+    - "lp user %magnata% parent add magnata"
+    - "lp user %magnata_old% parent remove magnata"
   periodic:
     interval_minutes: 60
     commands:

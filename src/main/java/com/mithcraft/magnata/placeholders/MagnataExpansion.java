@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class MagnataExpansion extends PlaceholderExpansion {
     private final MagnataPlugin plugin;
@@ -39,23 +40,49 @@ public class MagnataExpansion extends PlaceholderExpansion {
     @Override
     public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-        if (current == null) return "Nenhum";
+        List<MagnataRecord> history = plugin.getHistoryManager().getHistory();
 
+        // Placeholder principal (magnata atual)
+        if (params.isEmpty() || params.equalsIgnoreCase("current")) {
+            return current != null ? current.getPlayerName() : "Nenhum";
+        }
+
+        // Placeholders de histórico por posição
+        if (params.startsWith("rank_")) {
+            try {
+                int position = Integer.parseInt(params.split("_")[1]);
+                if (position >= 1 && position <= history.size()) {
+                    return history.get(position - 1).getPlayerName();
+                }
+            } catch (Exception e) {
+                return "Posição inválida";
+            }
+            return "N/A";
+        }
+
+        // Placeholder do magnata anterior
+        if (params.equalsIgnoreCase("old")) {
+            return history.size() > 0 ? history.get(0).getPlayerName() : "Nenhum";
+        }
+
+        // Placeholders existentes
         switch (params.toLowerCase()) {
             case "name":
-                return current.getPlayerName();
+                return current != null ? current.getPlayerName() : "Nenhum";
             case "balance":
-                return String.format("%,.2f", current.getBalance());
+                return current != null ? String.format("%,.2f", current.getBalance()) : "0.00";
             case "balance_raw":
-                return String.valueOf(current.getBalance());
+                return current != null ? String.valueOf(current.getBalance()) : "0";
             case "date":
-                return current.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                return current != null ? current.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A";
             case "time":
-                return current.getDate().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+                return current != null ? current.getDate().format(DateTimeFormatter.ofPattern("HH:mm:ss")) : "N/A";
             case "datetime":
-                return current.getFormattedDate();
+                return current != null ? current.getFormattedDate() : "N/A";
+            case "uuid":
+                return current != null ? current.getPlayerUUID().toString() : "N/A";
             default:
-                return null;
+                return null; // Placeholder desconhecido
         }
     }
 }

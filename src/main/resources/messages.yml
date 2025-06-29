@@ -1,37 +1,39 @@
 # Sistema de mensagens
-prefix: "&6[Magnata] &7"
+prefix: "&8[&aMagnata&8] &7"
 
 current_magnata:
-  - "&e=== &6Magnata Atual &e==="
-  - "&6Jogador: &f%player%"
-  - "&6Fortuna: &a$%balance%"
-  - "&6Desde: &f%date%"
-  - "&e===================="
+  - ""
+  - "&8=== &2Magnata Atual &8==="
+  - "&fJogador: &a%player%"
+  - "&fFortuna: &a$%balance%"
+  - "&fDesde: &a%date%"
+  - "&8===================="
+  - ""
 
 broadcast_new_magnata:
-  - "&e"
-  - "&6&lNOVO MAGNATA!"
-  - "&eParabéns a &6%player% &e(&a$%balance%&e)"
-  - "&e"
+  - "&8"
+  - "&2&lNOVO MAGNATA!"
+  - "&fParabéns a &a%player% &8(&a$%balance%&8)"
+  - "&8"
 
 history:
   header:
-    - "&e=== &6Histórico de Magnatas &e==="
-    - "&6Posição | Jogador | Fortuna | Data"
-    - "&e--------------------------------"
-  entry: "&e%position%. &6%player% &7- &a$%balance% &7(%date%)"
+    - "&8=== &2Histórico de Magnatas &8==="
+    - "&7Posição | Jogador | Fortuna | Data"
+    - "&8--------------------------------"
+  entry: "&f%position%. &a%player% &8- &a$%balance% &7(%date%)"
   footer:
-    - "&e--------------------------------"
-    - "&eTotal: &6%total% magnatas"
-    - "&eUse &6/magnata &epara ver o atual"
+    - "&8--------------------------------"
+    - "&fTotal: &a%total% magnatas"
+    - "&fUse &2/magnata &fpara ver o atual"
 
 help:
-  - "&e=== &6Ajuda do Magnata &e==="
-  - "&6/magnata &7- Mostra o magnata atual"
-  - "&6/magnata hist &7- Mostra o histórico"
-  - "&6/magnata reload &7- Recarrega o plugin"
-  - "&6/magnata help &7- Mostra esta ajuda"
-  - "&e======================"
+  - "&8=== &2Ajuda do Magnata &8==="
+  - "&a/magnata &7- Mostra o magnata atual"
+  - "&a/magnata hist &7- Mostra o histórico"
+  - "&a/magnata reload &7- Recarrega o plugin"
+  - "&a/magnata help &7- Mostra esta ajuda"
+  - "&8======================"
 
 errors:
   no_permission: "&cVocê não tem permissão!"
