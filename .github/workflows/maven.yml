@@ -1,6 +1,6 @@
 name: Java CI
 
-on: 
+on:
   push:
     branches: [ "main" ]
   pull_request:
@@ -24,7 +24,7 @@ jobs:
       run: mvn -B clean package --file pom.xml
       
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: MithCraftMagnata
         path: target/*.jar
