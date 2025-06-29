@@ -27,4 +27,4 @@ public class MagnataHistoryCommand implements CommandExecutor {
         });
         return true;
     }
-}}
+}
