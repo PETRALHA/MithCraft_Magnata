@@ -5,6 +5,9 @@ import com.mithcraft.magnata.models.MagnataRecord;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.time.format.DateTimeFormatter;
 
 public class MagnataExpansion extends PlaceholderExpansion {
     private final MagnataPlugin plugin;
@@ -34,26 +37,23 @@ public class MagnataExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, @NotNull String params) {
-        if (plugin.getHistoryManager() == null || 
-            plugin.getHistoryManager().getCurrentMagnata() == null) {
-            return "Nenhum";
-        }
+    public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
+        MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
+        if (current == null) return "Nenhum";
 
-        MagnataRecord magnata = plugin.getHistoryManager().getCurrentMagnata();
-        
         switch (params.toLowerCase()) {
             case "name":
-                return magnata.getPlayerName();
+                return current.getPlayerName();
             case "balance":
-                return String.format("%,.2f", magnata.getBalance());
+                return String.format("%,.2f", current.getBalance());
+            case "balance_raw":
+                return String.valueOf(current.getBalance());
             case "date":
-                return magnata.getFormattedDate();
-            case "all":
-                return String.format("%s (%.2f) em %s",
-                    magnata.getPlayerName(),
-                    magnata.getBalance(),
-                    magnata.getFormattedDate());
+                return current.getDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            case "time":
+                return current.getDate().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            case "datetime":
+                return current.getFormattedDate();
             default:
                 return null;
         }

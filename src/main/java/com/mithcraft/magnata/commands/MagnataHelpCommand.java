@@ -17,10 +17,16 @@ public class MagnataHelpCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        String prefix = plugin.getMessages().getString("prefix", "&6[Magnata] &7");
+        if (!sender.hasPermission("magnata.help")) {
+            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.no_permission")));
+            return true;
+        }
+
         List<String> helpMessages = plugin.getMessages().getStringList("help");
         
-        helpMessages.forEach(line -> sender.sendMessage(line.replace("%prefix%", prefix)));
+        for (String line : helpMessages) {
+            sender.sendMessage(plugin.formatMessage(line));
+        }
         return true;
     }
 }

@@ -15,13 +15,31 @@ public class MagnataReloadCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+        // Verificação de permissão
         if (!sender.hasPermission(plugin.getConfig().getString("permissions.magnata_reload", "magnata.reload"))) {
-            sender.sendMessage(plugin.getMessages().getString("prefix") + "§cVocê não tem permissão para recarregar o plugin.");
+            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.no_permission")));
             return true;
         }
 
-        plugin.reload();
-        sender.sendMessage(plugin.getMessages().getString("prefix") + "§aPlugin recarregado com sucesso!");
+        try {
+            // Recarregar configurações
+            plugin.reloadConfig();
+            plugin.getMessages().reload();
+            plugin.getHistoryManager().reload();
+            
+            // Verificar integrações
+            plugin.setupEconomy();
+            plugin.setupPlaceholderAPI();
+            
+            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.reload_success")));
+        } catch (Exception e) {
+            plugin.getLogger().severe("Erro ao recarregar o plugin: " + e.getMessage());
+            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.reload_failure")));
+            if (plugin.getConfig().getBoolean("settings.debug", false)) {
+                e.printStackTrace();
+            }
+        }
+        
         return true;
     }
 }

@@ -2,13 +2,16 @@ package com.mithcraft.magnata;
 
 import com.mithcraft.magnata.commands.*;
 import com.mithcraft.magnata.managers.*;
+import com.mithcraft.magnata.placeholders.MagnataExpansion;
 import net.milkbowl.vault.economy.Economy;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import me.clip.placeholderapi.PlaceholderAPI;
 
 import java.io.File;
 import java.io.InputStream;
@@ -21,6 +24,7 @@ public final class MagnataPlugin extends JavaPlugin {
     private Economy economy;
     private LuckPerms luckPerms;
     private FileConfiguration messages;
+    private boolean placeholderApiEnabled = false;
 
     @Override
     public void onEnable() {
@@ -32,16 +36,19 @@ public final class MagnataPlugin extends JavaPlugin {
             }
 
             // 2. Verificar dependências
-            if (!setupEconomy() || !setupLuckPerms()) {
-                shutdown("Dependências não encontradas");
+            if (!setupEconomy()) {
+                shutdown("Economia (Vault) não encontrada");
                 return;
             }
+            setupLuckPerms();
+            setupPlaceholderAPI();
 
             // 3. Inicializar componentes
             initializeManagers();
             registerCommands();
+            startMagnataChecker();
 
-            getLogger().info("§aPlugin ativado com sucesso!");
+            getLogger().info(formatMessage("&aPlugin ativado com sucesso!"));
             
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Erro crítico:", e);
@@ -52,6 +59,9 @@ public final class MagnataPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Desativando plugin...");
+        if (placeholderApiEnabled) {
+            new MagnataExpansion(this).unregister();
+        }
     }
 
     private boolean loadConfigurations() {
@@ -66,8 +76,7 @@ public final class MagnataPlugin extends JavaPlugin {
                     if (in != null) {
                         Files.copy(in, messagesFile.toPath());
                     } else {
-                        getLogger().warning("messages.yml padrão não encontrado, criando novo...");
-                        messagesFile.createNewFile();
+                        saveResource("messages.yml", false);
                     }
                 }
             }
@@ -81,18 +90,20 @@ public final class MagnataPlugin extends JavaPlugin {
     }
 
     private boolean setupEconomy() {
-        try {
-            RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-            if (rsp == null) {
-                getLogger().severe("Vault/Economy não encontrado!");
-                return false;
-            }
-            economy = rsp.getProvider();
-            return true;
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro na economia:", e);
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            getLogger().severe("Vault não encontrado!");
             return false;
         }
+        
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            getLogger().severe("Nenhum plugin de economia encontrado!");
+            return false;
+        }
+        
+        economy = rsp.getProvider();
+        getLogger().info("Economia conectada: " + economy.getName());
+        return true;
     }
 
     private boolean setupLuckPerms() {
@@ -100,11 +111,21 @@ public final class MagnataPlugin extends JavaPlugin {
             RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
             if (provider != null) {
                 this.luckPerms = provider.getProvider();
+                getLogger().info("LuckPerms conectado com sucesso");
+                return true;
             }
-            return true;
+            return false;
         } catch (Exception e) {
             getLogger().log(Level.WARNING, "LuckPerms não encontrado", e);
-            return true; // Não é essencial
+            return false;
+        }
+    }
+
+    private void setupPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new MagnataExpansion(this).register();
+            placeholderApiEnabled = true;
+            getLogger().info("PlaceholderAPI conectado com sucesso");
         }
     }
 
@@ -123,11 +144,29 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
+    private void startMagnataChecker() {
+        int interval = getConfig().getInt("settings.check_interval_seconds", 300) * 20;
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            rewardManager.checkMagnata();
+        }, interval, interval);
+    }
+
+    public String formatMessage(String message) {
+        return ChatColor.translateAlternateColorCodes('&', 
+            getMessages().getString("prefix", "&6[Magnata] &7") + message);
+    }
+
+    public String formatCurrency(double amount) {
+        return String.format("%,.2f", amount);
+    }
+
     public void reload() {
         reloadConfig();
         messages = YamlConfiguration.loadConfiguration(new File(getDataFolder(), "messages.yml"));
         if (historyManager != null) historyManager.reload();
         if (rewardManager != null) rewardManager.reload();
+        setupEconomy();
+        setupPlaceholderAPI();
     }
 
     private void shutdown(String reason) {
@@ -142,4 +181,5 @@ public final class MagnataPlugin extends JavaPlugin {
     public LuckPerms getLuckPerms() { return luckPerms; }
     public FileConfiguration getMessages() { return messages; }
     public FileConfiguration getMainConfig() { return getConfig(); }
+    public boolean isPlaceholderApiEnabled() { return placeholderApiEnabled; }
 }

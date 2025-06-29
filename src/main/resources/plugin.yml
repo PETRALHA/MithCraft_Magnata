@@ -8,11 +8,9 @@ description: Sistema de Magnata para servidores Minecraft
 commands:
   magnata:
     description: Verifica o magnata atual
-    aliases: [mg]
     usage: /magnata [help|hist|reload]
   magnata-history:
     description: Mostra o histórico
-    aliases: [hist]
     usage: /magnata hist
 
 permissions:
