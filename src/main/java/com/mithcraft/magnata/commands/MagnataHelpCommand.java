@@ -1,10 +1,10 @@
 package com.mithcraft.magnata.commands;
 
 import com.mithcraft.magnata.MagnataPlugin;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 public class MagnataHelpCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
@@ -14,16 +14,9 @@ public class MagnataHelpCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!sender.hasPermission("magnata.help")) {
-            sender.sendMessage(ChatColor.RED + "Você não tem permissão para ver a ajuda.");
-            return true;
-        }
-
-        sender.sendMessage(ChatColor.GOLD + "=== Ajuda do MithCraft Magnata ===");
-        sender.sendMessage(ChatColor.YELLOW + "/magnata - Mostra o magnata atual");
-        sender.sendMessage(ChatColor.YELLOW + "/magnata hist - Mostra o histórico");
-        sender.sendMessage(ChatColor.YELLOW + "/magnata help - Mostra esta ajuda");
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+        List<String> helpMessages = plugin.getConfig().getStringList("messages.help");
+        helpMessages.forEach(sender::sendMessage);
         return true;
     }
 }

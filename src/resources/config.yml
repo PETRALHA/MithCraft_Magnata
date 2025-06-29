@@ -26,6 +26,14 @@ messages:
       - "&eTotal: &6%total% magnatas"
       - "&eUse &6/magnata &epara ver o atual"
 
+  help:
+    - "&e=== &6Ajuda do Magnata &e==="
+    - "&6/magnata &7- Mostra o magnata atual"
+    - "&6/magnata hist &7- Mostra o histórico"
+    - "&6/magnata reload &7- Recarrega o plugin"
+    - "&6/magnata help &7- Mostra esta ajuda"
+    - "&e======================"
+
 rewards:
   on_become:
     - "eco give %player% 1000"

@@ -1,29 +1,26 @@
 package com.mithcraft.magnata.models;
 
-import org.bukkit.OfflinePlayer;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class MagnataRecord {
-    private final OfflinePlayer player;
+    private final UUID playerUUID;
+    private final String playerName;
     private final double balance;
     private final LocalDateTime date;
 
-    public MagnataRecord(OfflinePlayer player, double balance) {
-        this(player, balance, LocalDateTime.now());
-    }
-
-    public MagnataRecord(OfflinePlayer player, double balance, LocalDateTime date) {
-        this.player = player;
+    public MagnataRecord(UUID playerUUID, String playerName, double balance, LocalDateTime date) {
+        this.playerUUID = playerUUID;
+        this.playerName = playerName;
         this.balance = balance;
         this.date = date;
     }
 
-    // Getters
-    public OfflinePlayer getPlayer() { return player; }
-    public String getPlayerName() { return player.getName(); }
+    public UUID getPlayerUUID() { return playerUUID; }
+    public String getPlayerName() { return playerName; }
     public double getBalance() { return balance; }
     public LocalDateTime getDate() { return date; }
+
     public String getFormattedDate() {
         return date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
