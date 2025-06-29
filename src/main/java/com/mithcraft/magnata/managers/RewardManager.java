@@ -1,6 +1,7 @@
 package com.mithcraft.magnata.managers;
 
 import com.mithcraft.magnata.MagnataPlugin;
+import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
@@ -14,6 +15,14 @@ public class RewardManager {
     public RewardManager(MagnataPlugin plugin) {
         this.plugin = plugin;
         startPeriodicRewards();
+    }
+
+    public void checkPeriodicRewards() {
+        MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
+        if (current != null) {
+            OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
+            givePeriodicRewards(player);
+        }
     }
 
     public void giveBecomeMagnataRewards(OfflinePlayer player) {
@@ -41,11 +50,7 @@ public class RewardManager {
         if (interval <= 0) return;
 
         periodicRewardTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-            if (current != null) {
-                OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
-                givePeriodicRewards(player);
-            }
+            checkPeriodicRewards();
         }, interval, interval);
     }
 

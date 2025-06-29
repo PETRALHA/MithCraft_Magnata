@@ -1,6 +1,7 @@
 package com.mithcraft.magnata.models;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class MagnataRecord {

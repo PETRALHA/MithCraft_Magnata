@@ -6,6 +6,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class MagnataHelpCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
 
