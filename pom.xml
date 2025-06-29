@@ -22,25 +22,31 @@
     </properties>
 
     <repositories>
-        <!-- PaperMC -->
+        <!-- Repositório Principal -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         
-        <!-- Vault (JitPack) -->
+        <!-- PlaceholderAPI (Repositório confirmado funcional) -->
+        <repository>
+            <id>placeholderapi-repo</id>
+            <url>https://repo.helpch.at/content/repositories/placeholderapi/</url>
+        </repository>
+        
+        <!-- Vault -->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
         
-        <!-- PlaceholderAPI (Atualizado) -->
+        <!-- LuckPerms -->
         <repository>
-            <id>placeholderapi</id>
-            <url>https://repo.helpch.at/repository/releases/</url>
+            <id>luckperms-repo</id>
+            <url>https://repo.lucko.me/</url>
         </repository>
         
-        <!-- LuckPerms (Maven Central) -->
+        <!-- Maven Central -->
         <repository>
             <id>central</id>
             <url>https://repo1.maven.org/maven2/</url>
