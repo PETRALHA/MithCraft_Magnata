@@ -17,6 +17,7 @@ public class MagnataRecord {
         this.date = date;
     }
 
+    // Getters
     public UUID getPlayerUUID() { return playerUUID; }
     public String getPlayerName() { return playerName; }
     public double getBalance() { return balance; }

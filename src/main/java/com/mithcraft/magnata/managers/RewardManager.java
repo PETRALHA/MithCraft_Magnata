@@ -1,7 +1,6 @@
 package com.mithcraft.magnata.managers;
 
 import com.mithcraft.magnata.MagnataPlugin;
-import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,22 +16,21 @@ public class RewardManager {
         startPeriodicRewards();
     }
 
+    public void giveBecomeMagnataRewards(OfflinePlayer player) {
+        executeRewardCommands(plugin.getConfig().getStringList("rewards.on_become"), player);
+    }
+
     public void checkPeriodicRewards() {
-        MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-        if (current != null) {
-            OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
+        if (plugin.getHistoryManager().getCurrentMagnata() != null) {
+            OfflinePlayer player = Bukkit.getOfflinePlayer(
+                plugin.getHistoryManager().getCurrentMagnata().getPlayerUUID()
+            );
             givePeriodicRewards(player);
         }
     }
 
-    public void giveBecomeMagnataRewards(OfflinePlayer player) {
-        List<String> commands = plugin.getConfig().getStringList("rewards.on_become");
-        executeRewardCommands(commands, player);
-    }
-
-    public void givePeriodicRewards(OfflinePlayer player) {
-        List<String> commands = plugin.getConfig().getStringList("rewards.periodic.commands");
-        executeRewardCommands(commands, player);
+    private void givePeriodicRewards(OfflinePlayer player) {
+        executeRewardCommands(plugin.getConfig().getStringList("rewards.periodic.commands"), player);
     }
 
     private void executeRewardCommands(List<String> commands, OfflinePlayer player) {
@@ -49,9 +47,8 @@ public class RewardManager {
         int interval = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60) * 60 * 20;
         if (interval <= 0) return;
 
-        periodicRewardTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            checkPeriodicRewards();
-        }, interval, interval);
+        periodicRewardTask = Bukkit.getScheduler().runTaskTimer(plugin, 
+            this::checkPeriodicRewards, interval, interval);
     }
 
     public void reload() {

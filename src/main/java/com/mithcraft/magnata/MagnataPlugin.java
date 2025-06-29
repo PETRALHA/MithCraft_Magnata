@@ -20,7 +20,7 @@ public final class MagnataPlugin extends JavaPlugin {
     private Economy economy;
     private LuckPerms luckPerms;
     private FileConfiguration messages;
-    
+
     @Override
     public void onEnable() {
         // Carrega configurações
@@ -28,7 +28,11 @@ public final class MagnataPlugin extends JavaPlugin {
         createMessagesFile();
         
         // Configura economia (Vault)
-        setupEconomy();
+        if (!setupEconomy()) {
+            getLogger().severe("Desativando plugin - Vault não encontrado!");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         
         // Configura LuckPerms
         setupLuckPerms();
@@ -40,16 +44,17 @@ public final class MagnataPlugin extends JavaPlugin {
         // Registra comandos
         registerCommands();
         
-        // Registra PlaceholderAPI
-        if (getConfig().getBoolean("settings.use_placeholderapi") && 
+        // Registra PlaceholderAPI se estiver presente
+        if (getConfig().getBoolean("settings.use_placeholderapi", true) && 
             Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new MagnataExpansion(this).register();
+            getLogger().info("PlaceholderAPI registrado com sucesso!");
         }
         
         // Agenda verificações periódicas
         scheduleMagnataCheck();
         
-        getLogger().info("Plugin Magnata habilitado com sucesso!");
+        getLogger().info("Plugin Magnata habilitado com sucesso! Versão " + getDescription().getVersion());
     }
 
     private void createMessagesFile() {
@@ -60,21 +65,23 @@ public final class MagnataPlugin extends JavaPlugin {
         messages = YamlConfiguration.loadConfiguration(messagesFile);
     }
 
-    private void setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            getLogger().warning("Vault não encontrado! Economia desativada.");
-            return;
+    private boolean setupEconomy() {
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            return false;
         }
-        this.economy = getServer().getServicesManager().getRegistration(Economy.class).getProvider();
-        getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Normal);
+        var rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        economy = rsp.getProvider();
+        return economy != null;
     }
 
     private void setupLuckPerms() {
-        if (getServer().getPluginManager().getPlugin("LuckPerms") == null) {
-            getLogger().warning("LuckPerms não encontrado!");
-            return;
+        var provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+        if (provider != null) {
+            this.luckPerms = provider.getProvider();
         }
-        this.luckPerms = getServer().getServicesManager().getRegistration(LuckPerms.class).getProvider();
     }
 
     private void registerCommands() {
@@ -96,6 +103,7 @@ public final class MagnataPlugin extends JavaPlugin {
         createMessagesFile();
         historyManager.reload();
         rewardManager.reload();
+        getLogger().info("Configurações recarregadas com sucesso!");
     }
 
     // Getters

@@ -1,6 +1,5 @@
 package com.mithcraft.magnata.commands;
 
-import com.mithcraft.magnata.MagnataPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,13 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MagnataCommand implements CommandExecutor, TabCompleter {
-    private final MagnataPlugin plugin;
     private final MagnataHelpCommand helpCommand;
     private final MagnataHistoryCommand historyCommand;
     private final MagnataReloadCommand reloadCommand;
 
     public MagnataCommand(MagnataPlugin plugin) {
-        this.plugin = plugin;
         this.helpCommand = new MagnataHelpCommand(plugin);
         this.historyCommand = new MagnataHistoryCommand(plugin);
         this.reloadCommand = new MagnataReloadCommand(plugin);
@@ -38,7 +35,7 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
             case "reload":
                 return reloadCommand.onCommand(sender, cmd, label, args);
             default:
-                sender.sendMessage(plugin.getMessages().getString("prefix") + "§cComando desconhecido. Use /magnata help para ajuda.");
+                sender.sendMessage("§cComando desconhecido. Use /magnata help para ajuda.");
                 return true;
         }
     }
@@ -46,13 +43,11 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, String[] args) {
         List<String> completions = new ArrayList<>();
-        
         if (args.length == 1) {
             completions.add("help");
             completions.add("history");
             completions.add("reload");
         }
-        
         return completions;
     }
 }

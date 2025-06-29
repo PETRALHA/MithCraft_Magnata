@@ -1,7 +1,6 @@
 package com.mithcraft.magnata.placeholders;
 
 import com.mithcraft.magnata.MagnataPlugin;
-import com.mithcraft.magnata.models.MagnataRecord;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -30,18 +29,17 @@ public class MagnataExpansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String params) {
-        MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-        if (current == null) return "Ninguém";
+        if (plugin.getHistoryManager().getCurrentMagnata() == null) {
+            return "Nenhum";
+        }
 
         switch (params.toLowerCase()) {
             case "name":
-                return current.getPlayerName();
+                return plugin.getHistoryManager().getCurrentMagnata().getPlayerName();
             case "balance":
-                return String.format("%,.2f", current.getBalance());
+                return String.format("%,.2f", plugin.getHistoryManager().getCurrentMagnata().getBalance());
             case "date":
-                return current.getFormattedDate();
-            case "iscurrent":
-                return player != null && player.getUniqueId().equals(current.getPlayerUUID()) ? "sim" : "não";
+                return plugin.getHistoryManager().getCurrentMagnata().getFormattedDate();
             default:
                 return null;
         }
