@@ -9,19 +9,18 @@ formats:
 
 commands:
   magnata:
-    usage: "{prefix}&6Uso: /magnata [help|history|reload]"
     current:
       empty: "{prefix}&7Atualmente não há um magnata definido."
       header: "{prefix}&8&m----------------&6 Magnata Atual &8&m----------------"
       content:
-        - "{prefix}&6Jogador: &f%player%"
-        - "{prefix}&6Fortuna: &f%balance%"
-        - "{prefix}&6Desde: &f%date%"
+        - "{prefix}&6Jogador: &f{player}"
+        - "{prefix}&6Fortuna: &f{balance}"
+        - "{prefix}&6Desde: &f{date}"
       footer: "{prefix}&8&m----------------------------------------"
     
     history:
-      header: "{prefix}&8&m-------------&6 Histórico (Página %page%/%total%) &8&m-------------"
-      entry: "{prefix}&8#%position% &6%player% &7- &f%balance% &7(&f%date%&7)"
+      header: "{prefix}&8&m-------------&6 Histórico (Página {page}/{total}) &8&m-------------"
+      entry: "{prefix}&8#{position} &6{player} &7- &f{balance} &7(&f{date}&7)"
       footer: "{prefix}&8&m----------------------------------------"
       empty: "{prefix}&eNenhum registro histórico encontrado."
     
@@ -33,8 +32,8 @@ notifications:
   new_magnata:
     - ""
     - "{prefix}&6&lNOVO MAGNATA!"
-    - "{prefix}&fParabéns a &6%player% &7(&6%balance%&7)"
-    - "{prefix}&7Anterior: &f%previous_player% &7(&f%previous_balance%&7)"
+    - "{prefix}&fParabéns a &6{player} &7(&6{balance}&7)"
+    - "{prefix}&7Anterior: &f{previous_player} &7(&f{previous_balance}&7)"
     - ""
   no_previous_magnata: "{prefix}&7(Nenhum magnata anterior)"
 
@@ -55,3 +54,7 @@ help:
     - "{prefix}&6/magnata help &f- Mostra esta ajuda"
   footer: "{prefix}&8&m----------------------------------------"
   empty: "{prefix}&cNenhum comando de ajuda disponível."
+
+ranking:
+  position_empty: "{prefix}&7Posição {position}: &cVazia"
+  top_line_format: "{prefix}&e{position}. &6{player} &7- &a{balance}"

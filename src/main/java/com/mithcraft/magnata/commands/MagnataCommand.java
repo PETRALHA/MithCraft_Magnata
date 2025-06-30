@@ -72,17 +72,24 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
         
         // Header
-        sendFormattedMessage(sender, "commands.magnata.current.header");
+        sender.sendMessage(plugin.formatMessage("commands.magnata.current.header"));
         
         // Conteúdo
         if (current == null) {
-            sendFormattedMessage(sender, "commands.magnata.current.empty");
+            sender.sendMessage(plugin.formatMessage("commands.magnata.current.empty"));
         } else {
-            sendFormattedContent(sender, current);
+            List<String> contentLines = plugin.getMessages().getStringList("commands.magnata.current.content");
+            for (String line : contentLines) {
+                String formatted = plugin.formatMessage(line)
+                    .replace("{player}", current.getPlayerName())
+                    .replace("{balance}", plugin.formatCurrency(current.getBalance()))
+                    .replace("{date}", current.getFormattedDate());
+                sender.sendMessage(formatted);
+            }
         }
         
         // Footer
-        sendFormattedMessage(sender, "commands.magnata.current.footer");
+        sender.sendMessage(plugin.formatMessage("commands.magnata.current.footer"));
         return true;
     }
 

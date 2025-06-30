@@ -96,20 +96,22 @@ public class HistoryManager {
     }
 
     private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
+        // 1. Dar recompensas
         plugin.getRewardManager().giveBecomeMagnataRewards(player);
         
+        // 2. Preparar variáveis
         String playerName = Objects.requireNonNull(player.getName());
         String balanceFormatted = plugin.formatCurrency(balance);
         String previousPlayer = history.isEmpty() ? "Ninguém" : history.get(0).getPlayerName();
         String previousBalance = history.isEmpty() ? plugin.formatCurrency(0) : plugin.formatCurrency(history.get(0).getBalance());
 
-        // Envia todas as mensagens formatadas
+        // 3. Enviar notificações formatadas
         for (String rawMessage : plugin.getMessages().getStringList("notifications.new_magnata")) {
             String message = plugin.formatMessage(rawMessage)
-                .replace("%player%", playerName)
-                .replace("%balance%", balanceFormatted)
-                .replace("%previous_player%", previousPlayer)
-                .replace("%previous_balance%", previousBalance);
+                .replace("{player}", playerName)
+                .replace("{balance}", balanceFormatted)
+                .replace("{previous_player}", previousPlayer)
+                .replace("{previous_balance}", previousBalance);
             
             Bukkit.broadcastMessage(message);
         }
