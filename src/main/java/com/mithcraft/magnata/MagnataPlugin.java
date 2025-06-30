@@ -58,6 +58,9 @@ public final class MagnataPlugin extends JavaPlugin {
             // 4. Registrar comando principal (sem alias /mg)
             registerMainCommand();
 
+            // 5. Iniciar verificador de magnata
+            startMagnataChecker();
+
             getLogger().info("Plugin ativado com sucesso!");
 
         } catch (Exception e) {
@@ -77,7 +80,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private boolean loadConfigurations() {
+    public boolean loadConfigurations() {
         try {
             // Configuração principal
             saveDefaultConfig();
@@ -102,7 +105,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private boolean setupEconomy() {
+    public boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
