@@ -19,6 +19,9 @@
         <vault.version>1.7.1</vault.version>
         <luckperms.version>5.4</luckperms.version>
         <placeholderapi.version>2.11.6</placeholderapi.version>
+        <!-- Novas propriedades para Adventure API -->
+        <adventure.version>4.14.0</adventure.version>
+        <adventure.platform.version>4.3.0</adventure.platform.version>
     </properties>
 
     <repositories>
@@ -28,7 +31,7 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         
-        <!-- PlaceholderAPI (Repositório confirmado funcional) -->
+        <!-- PlaceholderAPI -->
         <repository>
             <id>placeholderapi-repo</id>
             <url>https://repo.helpch.at/content/repositories/placeholderapi/</url>
@@ -50,6 +53,12 @@
         <repository>
             <id>central</id>
             <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+
+        <!-- Adventure API -->
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 
@@ -91,6 +100,32 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>24.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Adventure API (Novas dependências) -->
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-api</artifactId>
+            <version>${adventure.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-platform-bukkit</artifactId>
+            <version>${adventure.platform.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>${adventure.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-legacy</artifactId>
+            <version>${adventure.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
