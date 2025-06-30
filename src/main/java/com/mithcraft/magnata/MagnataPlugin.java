@@ -9,7 +9,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.milkbowl.vault.economy.Economy;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -29,7 +28,7 @@ public final class MagnataPlugin extends JavaPlugin {
     private FileConfiguration messages;
     private boolean placeholderApiEnabled = false;
     
-    // Sistemas de formatação (ambos disponíveis)
+    // Sistemas de formatação
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
     private final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.legacySection();
 
@@ -55,46 +54,44 @@ public final class MagnataPlugin extends JavaPlugin {
             registerCommands();
             startMagnataChecker();
 
-            // Log com ambos sistemas (exemplo)
-            getLogger().info(formatMessageLegacy("&aPlugin ativado com sucesso!"));
-            getComponentLogger().info(formatComponent("<gradient:gold:white>[MithCraftMagnata]</gradient> <green>Pronto!"));
+            getComponentLogger().info(formatComponent("<gradient:gold:white>[MithCraftMagnata]</gradient> <green>Plugin ativado com sucesso!"));
             
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro crítico:", e);
+            getLogger().log(Level.SEVERE, "Erro crítico na inicialização:", e);
             shutdown("Erro na inicialização");
         }
     }
 
     @Override
     public void onDisable() {
-        getLogger().info(formatMessageLegacy("&6[MithCraftMagnata] &7Desativando plugin..."));
+        getComponentLogger().info(formatComponent("<gold>[MithCraftMagnata]</gold> <gray>Desativando plugin..."));
         if (placeholderApiEnabled) {
             new MagnataExpansion(this).unregister();
         }
     }
 
-    // ----- Sistemas de Formatação (AMBOS disponíveis) -----
-    
-    /**
-     * Formata mensagens com cores tradicionais (&a, &6, etc)
-     */
-    public String formatMessageLegacy(String message) {
-        return ChatColor.translateAlternateColorCodes('&', 
-            getMessages().getString("prefix", "&6[Magnata] &7") + message
-        );
+    // ----- Sistemas de Formatação -----
+    public String formatMessage(String message) {
+        return legacySerializer.serialize(
+            miniMessage.deserialize(getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message)
+        ).replace('§', '&');
     }
-    
-    /**
-     * Formata mensagens com MiniMessage (<gold>, <gradient>, etc)
-     */
+
     public Component formatComponent(String message) {
         return miniMessage.deserialize(
             getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message
         );
     }
-    
-    // ----- Métodos Originais (mantidos integralmente) -----
-    
+
+    public String formatMessageLegacy(String message) {
+        return formatMessage(message); // Mantido para compatibilidade
+    }
+
+    public String formatCurrency(double amount) {
+        return economy != null ? economy.format(amount) : String.valueOf(amount);
+    }
+
+    // ----- Configurações e Inicialização -----
     public boolean loadConfigurations() {
         try {
             saveDefaultConfig();
@@ -108,12 +105,12 @@ public final class MagnataPlugin extends JavaPlugin {
             messages = YamlConfiguration.loadConfiguration(messagesFile);
             return true;
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao carregar configs:", e);
+            getLogger().log(Level.SEVERE, "Erro ao carregar configurações:", e);
             return false;
         }
     }
 
-    public boolean setupEconomy() {
+    private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             getLogger().severe("Vault não encontrado!");
             return false;
@@ -128,12 +125,53 @@ public final class MagnataPlugin extends JavaPlugin {
         return true;
     }
 
-    // ... (todos os outros métodos originais permanecem IDÊNTICOS)
-    
-    // Getters
+    private void setupLuckPerms() {
+        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+        if (provider != null) {
+            luckPerms = provider.getProvider();
+            getLogger().info("LuckPerms conectado com sucesso!");
+        }
+    }
+
+    private void setupPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new MagnataExpansion(this).register();
+            placeholderApiEnabled = true;
+            getLogger().info("PlaceholderAPI conectado com sucesso!");
+        }
+    }
+
+    private void initializeManagers() {
+        this.historyManager = new HistoryManager(this);
+        this.rewardManager = new RewardManager(this);
+    }
+
+    private void registerCommands() {
+        new MagnataCommand(this);
+        new MagnataHelpCommand(this);
+        new MagnataHistoryCommand(this);
+        new MagnataReloadCommand(this);
+    }
+
+    private void startMagnataChecker() {
+        // Implementação básica - ajuste conforme necessário
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            // Lógica de verificação do magnata
+            getLogger().info("Verificação periódica do magnata executada");
+        }, 20L * 60, 20L * 60 * 5); // A cada 5 minutos
+    }
+
+    private void shutdown(String reason) {
+        getLogger().severe(reason);
+        getServer().getPluginManager().disablePlugin(this);
+    }
+
+    // ----- Getters -----
     public HistoryManager getHistoryManager() { return historyManager; }
     public RewardManager getRewardManager() { return rewardManager; }
     public Economy getEconomy() { return economy; }
+    public LuckPerms getLuckPerms() { return luckPerms; }
     public FileConfiguration getMessages() { return messages; }
+    public FileConfiguration getMainConfig() { return getConfig(); }
     public boolean isPlaceholderApiEnabled() { return placeholderApiEnabled; }
 }

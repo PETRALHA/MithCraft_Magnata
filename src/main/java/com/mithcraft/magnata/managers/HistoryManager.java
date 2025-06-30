@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class HistoryManager {
     private final MagnataPlugin plugin;
@@ -35,10 +37,11 @@ public class HistoryManager {
         }
 
         Optional<OfflinePlayer> richestPlayer = Arrays.stream(Bukkit.getOfflinePlayers())
+                .filter(Objects::nonNull)
                 .filter(p -> p.hasPlayedBefore() && p.getName() != null)
                 .max(Comparator.comparingDouble(p -> plugin.getEconomy().getBalance(p)));
 
-        if (!richestPlayer.isPresent()) {
+        if (richestPlayer.isEmpty()) {
             plugin.getLogger().warning("Nenhum jogador encontrado para verificar magnata");
             return;
         }
@@ -53,13 +56,13 @@ public class HistoryManager {
     private boolean shouldUpdateMagnata(OfflinePlayer player, double newBalance) {
         if (currentMagnata == null) return true;
         if (!currentMagnata.getPlayerUUID().equals(player.getUniqueId())) return true;
-        return plugin.getMainConfig().getBoolean("settings.force_recheck", false);
+        return plugin.getConfig().getBoolean("settings.force_recheck", false);
     }
 
     private void setNewMagnata(OfflinePlayer player, double balance) {
         MagnataRecord newMagnata = new MagnataRecord(
                 player.getUniqueId(),
-                player.getName(),
+                Objects.requireNonNull(player.getName()),
                 balance,
                 LocalDateTime.now()
         );
@@ -75,16 +78,16 @@ public class HistoryManager {
     }
 
     private void trimHistory() {
-        int maxHistory = plugin.getMainConfig().getInt("settings.max_history_size", 10);
-        while (history.size() > maxHistory) {
-            history.remove(history.size() - 1);
+        int maxHistory = plugin.getConfig().getInt("settings.max_history_size", 10);
+        if (history.size() > maxHistory) {
+            history.subList(maxHistory, history.size()).clear();
         }
     }
 
     private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
         plugin.getRewardManager().giveBecomeMagnataRewards(player);
         
-        String playerName = player.getName();
+        String playerName = Objects.requireNonNull(player.getName());
         String balanceFormatted = plugin.formatCurrency(balance);
         
         plugin.getMessages().getStringList("broadcast_new_magnata").forEach(msg -> {
@@ -103,16 +106,31 @@ public class HistoryManager {
         try {
             YamlConfiguration config = YamlConfiguration.loadConfiguration(historyFile);
             
-            // Desserialização corrigida
-            if (config.contains("current")) {
-                Map<String, Object> currentData = config.getConfigurationSection("current").getValues(false);
-                currentMagnata = MagnataRecord.deserialize(currentData);
+            // Desserialização segura do magnata atual
+            if (config.isConfigurationSection("current")) {
+                ConfigurationSection section = config.getConfigurationSection("current");
+                if (section != null) {
+                    currentMagnata = MagnataRecord.deserialize(section.getValues(false));
+                }
             }
             
-            if (config.contains("history")) {
-                for (Map<?, ?> map : config.getMapList("history")) {
-                    history.add(MagnataRecord.deserialize((Map<String, Object>) map));
-                }
+            // Desserialização segura do histórico
+            if (config.isList("history")) {
+                config.getList("history", Collections.emptyList()).stream()
+                    .filter(entry -> entry instanceof Map)
+                    .map(entry -> (Map<?, ?>) entry)
+                    .map(rawMap -> {
+                        Map<String, Object> safeMap = new LinkedHashMap<>();
+                        rawMap.forEach((key, value) -> safeMap.put(String.valueOf(key), value));
+                        return safeMap;
+                    })
+                    .forEach(map -> {
+                        try {
+                            history.add(MagnataRecord.deserialize(map));
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().warning("Entrada inválida no histórico: " + e.getMessage());
+                        }
+                    });
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Erro ao carregar histórico", e);
@@ -127,10 +145,11 @@ public class HistoryManager {
                 config.createSection("current", currentMagnata.serialize());
             }
             
-            List<Map<String, Object>> historyData = new ArrayList<>();
-            history.forEach(record -> historyData.add(record.serialize()));
-            config.set("history", historyData);
+            List<Map<String, Object>> historyData = history.stream()
+                .map(MagnataRecord::serialize)
+                .collect(Collectors.toList());
             
+            config.set("history", historyData);
             config.save(historyFile);
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "Erro ao salvar histórico", e);
@@ -138,10 +157,12 @@ public class HistoryManager {
     }
 
     public List<MagnataRecord> getHistory() {
-        return Collections.unmodifiableList(new ArrayList<MagnataRecord>() {{
-            if (currentMagnata != null) add(currentMagnata);
-            addAll(history);
-        }});
+        List<MagnataRecord> fullHistory = new ArrayList<>();
+        if (currentMagnata != null) {
+            fullHistory.add(currentMagnata);
+        }
+        fullHistory.addAll(history);
+        return Collections.unmodifiableList(fullHistory);
     }
 
     public MagnataRecord getCurrentMagnata() {

@@ -12,9 +12,9 @@ commands:
 # Sistema de Recompensas
 rewards:
   on_become:
-    - "eco give %player% 1000"
-    - "lp user %magnata% parent add magnata"
-    - "lp user %magnata_old% parent remove magnata"
+    - "eco give %player% 100"
+    - "lp user %player% parent add magnata"
+    - "lp user %magnata_previous_name% parent remove magnata"
   periodic:
     interval_minutes: 60
     commands:
