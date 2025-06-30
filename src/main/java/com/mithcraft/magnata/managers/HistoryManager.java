@@ -31,6 +31,10 @@ public class HistoryManager {
         this.updateTopPlayersCache();
     }
 
+    // =========================================
+    // Métodos Principais
+    // =========================================
+
     public void checkForNewMagnata() {
         if (plugin.getEconomy() == null) {
             plugin.getLogger().warning("Economia não disponível para verificar magnata");
@@ -51,6 +55,10 @@ public class HistoryManager {
             setNewMagnata(richestPlayer, balance);
         }
     }
+
+    // =========================================
+    // Métodos de Atualização
+    // =========================================
 
     private void updateTopPlayersCache() {
         topPlayersCache.clear();
@@ -95,6 +103,10 @@ public class HistoryManager {
         }
     }
 
+    // =========================================
+    // Notificações e Recompensas
+    // =========================================
+
     private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
         plugin.getRewardManager().giveBecomeMagnataRewards(player);
         
@@ -104,7 +116,6 @@ public class HistoryManager {
         String previousPlayer = history.isEmpty() ? "Ninguém" : history.get(0).getPlayerName();
         String previousBalance = history.isEmpty() ? plugin.formatCurrency(0) : plugin.formatCurrency(history.get(0).getBalance());
 
-        // Envia notificação formatada
         for (String line : plugin.getMessages().getStringList("notifications.new_magnata")) {
             String message = line
                 .replace("{prefix}", prefix)
@@ -116,6 +127,10 @@ public class HistoryManager {
             Bukkit.broadcastMessage(message);
         }
     }
+
+    // =========================================
+    // Persistência de Dados (Save/Load)
+    // =========================================
 
     private void loadHistory() {
         if (!historyFile.exists()) return;
@@ -171,6 +186,10 @@ public class HistoryManager {
         }
     }
 
+    // =========================================
+    // Métodos Públicos para Consulta
+    // =========================================
+
     public List<MagnataRecord> getHistory() {
         List<MagnataRecord> fullHistory = new ArrayList<>();
         if (currentMagnata != null) {
@@ -190,7 +209,10 @@ public class HistoryManager {
         this.updateTopPlayersCache();
     }
 
-    // Métodos de ranking
+    // =========================================
+    // Métodos de Ranking (PlaceholderAPI)
+    // =========================================
+
     public String getPlayerAtPosition(int position) {
         if (position <= 0 || position > topPlayersCache.size()) return "N/A";
         OfflinePlayer player = topPlayersCache.get(position - 1);
@@ -200,6 +222,32 @@ public class HistoryManager {
     public double getBalanceAtPosition(int position) {
         if (position <= 0 || position > topPlayersCache.size()) return 0.0;
         return plugin.getEconomy().getBalance(topPlayersCache.get(position - 1));
+    }
+
+    public int getPlayerPosition(UUID playerUUID) {
+        for (int i = 0; i < topPlayersCache.size(); i++) {
+            if (topPlayersCache.get(i).getUniqueId().equals(playerUUID)) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+    public String getDateAtPosition(int position) {
+        if (position <= 0) return "N/A";
+        
+        // Posição 1 é o magnata atual
+        if (position == 1 && currentMagnata != null) {
+            return currentMagnata.getFormattedDate();
+        }
+        
+        // Posições > 1 vêm do histórico
+        int historyIndex = position - 2;
+        if (historyIndex >= 0 && historyIndex < history.size()) {
+            return history.get(historyIndex).getFormattedDate();
+        }
+        
+        return "N/A";
     }
 
     public String getFormattedTopLine(int position) {
