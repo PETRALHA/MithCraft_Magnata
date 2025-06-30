@@ -55,7 +55,7 @@ public final class MagnataPlugin extends JavaPlugin {
             // 3. Inicializar managers
             initializeManagers();
 
-            // 4. Registrar comando principal (sem alias /mg)
+            // 4. Registrar comando principal
             registerMainCommand();
 
             // 5. Iniciar verificador de magnata
@@ -141,12 +141,7 @@ public final class MagnataPlugin extends JavaPlugin {
 
     private void registerMainCommand() {
         try {
-            // Registrar apenas o comando principal sem alias
-            Objects.requireNonNull(getCommand("magnata"), "Comando 'magnata' não encontrado no plugin.yml")
-                .setExecutor(new MagnataCommand(this));
-            
-            // Os aliases dos subcomandos (help, history, etc) serão tratados
-            // dentro da classe MagnataCommand
+            Objects.requireNonNull(getCommand("magnata")).setExecutor(new MagnataCommand(this));
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Falha ao registrar comando principal:", e);
             shutdown("Falha ao registrar comando principal");
@@ -167,16 +162,14 @@ public final class MagnataPlugin extends JavaPlugin {
         getServer().getPluginManager().disablePlugin(this);
     }
 
-    // ===== SISTEMA DE MENSAGENS =====
+    // ===== UTILITÁRIOS =====
+    public String colorize(String message) {
+        return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
     public String formatMessage(String path) {
         String message = messages.getString(path, "&cMensagem não encontrada: " + path);
-        String prefix = messages.getString("formats.prefix", "");
-        
-        if (message.contains("{prefix}")) {
-            message = message.replace("{prefix}", prefix);
-        }
-        
-        return ChatColor.translateAlternateColorCodes('&', message);
+        return colorize(message.replace("{prefix}", getPrefix()));
     }
 
     public String formatMessage(String path, Map<String, String> replacements) {
@@ -188,7 +181,11 @@ public final class MagnataPlugin extends JavaPlugin {
     }
 
     public String formatCurrency(double amount) {
-        return economy != null ? economy.format(amount) : String.format("%,.2f", amount);
+        return economy != null ? economy.format(amount) : String.format("$%,.2f", amount);
+    }
+
+    public String getPrefix() {
+        return colorize(messages.getString("formats.prefix", ""));
     }
 
     // ===== GETTERS =====

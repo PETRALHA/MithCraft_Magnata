@@ -32,41 +32,39 @@ public class MagnataHelpCommand implements CommandExecutor {
         if (sender.hasPermission(helpPermission)) {
             return true;
         }
-        String noPermMessage = plugin.getMessages().getString("errors.no_permission")
-            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
-        sender.sendMessage(noPermMessage);
+        sender.sendMessage(plugin.colorize(
+            plugin.getMessages().getString("errors.no_permission", "&cSem permissão!")
+                .replace("{prefix}", plugin.getPrefix())
+        ));
         return false;
     }
 
     private void sendHelpMessages(CommandSender sender) {
-        String prefix = plugin.getMessages().getString("formats.prefix", "");
+        String prefix = plugin.getPrefix();
         
         // Envia header
-        sendSection(sender, "help.header", prefix);
-        
+        sender.sendMessage(plugin.colorize(
+            plugin.getMessages().getString("help.header", "&8[&6Ajuda&8]")
+                .replace("{prefix}", prefix)
+        ));
+
         // Envia conteúdo
         List<String> helpLines = plugin.getMessages().getStringList("help.content");
         if (helpLines.isEmpty()) {
-            sendSection(sender, "help.empty", prefix);
+            sender.sendMessage(plugin.colorize(
+                plugin.getMessages().getString("help.empty", "&cNenhum comando disponível")
+                    .replace("{prefix}", prefix)
+            ));
         } else {
-            helpLines.forEach(line -> sender.sendMessage(line.replace("{prefix}", prefix)));
-        }
-        
-        // Envia footer
-        sendSection(sender, "help.footer", prefix);
-    }
-
-    private void sendSection(CommandSender sender, String path, String prefix) {
-        if (plugin.getMessages().isList(path)) {
-            plugin.getMessages().getStringList(path).forEach(line -> 
-                sender.sendMessage(line.replace("{prefix}", prefix))
+            helpLines.forEach(line -> 
+                sender.sendMessage(plugin.colorize(line.replace("{prefix}", prefix)))
             );
-        } else {
-            String message = plugin.getMessages().getString(path, "")
-                .replace("{prefix}", prefix);
-            if (!message.isEmpty()) {
-                sender.sendMessage(message);
-            }
         }
+
+        // Envia footer
+        sender.sendMessage(plugin.colorize(
+            plugin.getMessages().getString("help.footer", "&8----------------")
+                .replace("{prefix}", prefix)
+        ));
     }
 }

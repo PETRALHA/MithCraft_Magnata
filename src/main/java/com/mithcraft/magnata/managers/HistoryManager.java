@@ -110,19 +110,19 @@ public class HistoryManager {
     private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
         plugin.getRewardManager().giveBecomeMagnataRewards(player);
         
-        String prefix = plugin.getMessages().getString("formats.prefix", "");
+        String prefix = plugin.colorize(plugin.getMessages().getString("formats.prefix", ""));
         String playerName = Objects.requireNonNull(player.getName());
         String balanceFormatted = plugin.formatCurrency(balance);
         String previousPlayer = history.isEmpty() ? "Ninguém" : history.get(0).getPlayerName();
         String previousBalance = history.isEmpty() ? plugin.formatCurrency(0) : plugin.formatCurrency(history.get(0).getBalance());
 
         for (String line : plugin.getMessages().getStringList("notifications.new_magnata")) {
-            String message = line
+            String message = plugin.colorize(line
                 .replace("{prefix}", prefix)
                 .replace("{player}", playerName)
                 .replace("{balance}", balanceFormatted)
                 .replace("{previous_player}", previousPlayer)
-                .replace("{previous_balance}", previousBalance);
+                .replace("{previous_balance}", previousBalance));
             
             Bukkit.broadcastMessage(message);
         }
