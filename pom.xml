@@ -20,7 +20,7 @@
         <!-- Versões das dependências -->
         <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
         <vault.version>1.7.1</vault.version>
-        <luckperms.version>5.4.104</luckperms.version>
+        <luckperms.version>5.4.54</luckperms.version> <!-- Versão verificada no Maven Central -->
         <placeholderapi.version>2.11.6</placeholderapi.version>
         <adventure.version>4.14.0</adventure.version>
         <adventure.platform.version>4.3.0</adventure.platform.version>
@@ -34,7 +34,7 @@
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         
-        <!-- PlaceholderAPI (Corrigido) -->
+        <!-- PlaceholderAPI -->
         <repository>
         <id>helpchat-repo-releases</id>
         <name>HelpChat Maven Repository</name>
@@ -47,10 +47,10 @@
             <url>https://jitpack.io</url>
         </repository>
         
-        <!-- LuckPerms -->
+        <!-- Maven Central (LuckPerms está aqui) -->
         <repository>
-            <id>luckperms-repo</id>
-            <url>https://repo.lucko.me/</url>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
         
         <!-- Sonatype (Adventure) -->
@@ -117,12 +117,6 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-minimessage</artifactId>
-            <version>${adventure.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-serializer-legacy</artifactId>
             <version>${adventure.version}</version>
             <scope>provided</scope>
         </dependency>
