@@ -46,12 +46,17 @@ public class RewardManager {
 
     private void executeRewardCommands(String rewardType, OfflinePlayer player) {
         List<String> commands = plugin.getConfig().getStringList("rewards." + rewardType);
-        if (commands.isEmpty() || player.getName() == null) return;
+        if (commands.isEmpty() || player.getName() == null) {
+            logDebug("Nenhum comando de recompensa encontrado para: " + rewardType);
+            return;
+        }
 
-        commands.forEach(command -> executeRewardCommand(
-            command.replace("%player%", player.getName())
-                  .replace("%uuid%", player.getUniqueId().toString())
-        ));
+        commands.forEach(command -> {
+            String processedCommand = command
+                .replace("%player%", player.getName())
+                .replace("%uuid%", player.getUniqueId().toString());
+            executeRewardCommand(processedCommand);
+        });
     }
 
     private void executeRewardCommand(String command) {
@@ -59,18 +64,29 @@ public class RewardManager {
             String formatted = formatCommand(command);
             logDebug("[Recompensa] Executando: " + formatted);
             
-            Bukkit.getScheduler().callSyncMethod(plugin, () -> 
-                Bukkit.dispatchCommand(console, formatted)
-            );
+            if (Bukkit.isPrimaryThread()) {
+                Bukkit.dispatchCommand(console, formatted);
+            } else {
+                Bukkit.getScheduler().callSyncMethod(plugin, () -> 
+                    Bukkit.dispatchCommand(console, formatted)
+                );
+            }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Erro ao executar comando: " + command, e);
         }
     }
 
     private String formatCommand(String command) {
-        return plugin.isPlaceholderApiEnabled() 
-            ? PlaceholderAPI.setPlaceholders(null, command)
-            : command;
+        if (!plugin.isPlaceholderApiEnabled()) {
+            return command;
+        }
+        
+        try {
+            return PlaceholderAPI.setPlaceholders(null, command);
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Erro ao processar placeholders no comando: " + command, e);
+            return command;
+        }
     }
 
     private BukkitTask startPeriodicRewards() {
@@ -78,27 +94,40 @@ public class RewardManager {
             periodicRewardTask.cancel();
         }
 
-        int intervalTicks = plugin.getConfig().getInt("rewards.periodic.interval", 60) * 60 * 20;
-        if (intervalTicks <= 0) return null;
+        int intervalMinutes = plugin.getConfig().getInt("rewards.periodic.interval", 60);
+        if (intervalMinutes <= 0) {
+            logDebug("Recompensas periódicas desativadas (intervalo <= 0)");
+            return null;
+        }
+
+        long intervalTicks = intervalMinutes * 60 * 20;
+        logDebug("Iniciando recompensas periódicas com intervalo de " + intervalMinutes + " minutos");
 
         return Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-            if (current != null) {
-                OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
-                if (player.hasPlayedBefore()) {
-                    executeRewardCommands("periodic", player);
-                }
+            if (current == null) {
+                logDebug("Nenhum magnata atual para recompensas periódicas");
+                return;
+            }
+
+            OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
+            if (player.hasPlayedBefore()) {
+                logDebug("Distribuindo recompensas periódicas para: " + current.getPlayerName());
+                executeRewardCommands("periodic.commands", player);
+            } else {
+                logDebug("Jogador " + current.getPlayerName() + " nunca jogou, ignorando recompensas");
             }
         }, intervalTicks, intervalTicks);
     }
 
     private void logDebug(String message) {
         if (plugin.getConfig().getBoolean("settings.debug", false)) {
-            plugin.getLogger().info(message);
+            plugin.getLogger().info("[DEBUG] " + message);
         }
     }
 
     public void reload() {
+        logDebug("Recarregando RewardManager...");
         if (periodicRewardTask != null) {
             periodicRewardTask.cancel();
         }
@@ -106,6 +135,7 @@ public class RewardManager {
     }
 
     public void shutdown() {
+        logDebug("Desativando RewardManager...");
         if (periodicRewardTask != null) {
             periodicRewardTask.cancel();
         }

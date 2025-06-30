@@ -100,13 +100,19 @@ public class HistoryManager {
         
         String playerName = Objects.requireNonNull(player.getName());
         String balanceFormatted = plugin.formatCurrency(balance);
-        
-        plugin.getMessages().getStringList("notifications.new_magnata").forEach(msg -> {
-            String message = plugin.formatMessage(msg)
+        String previousPlayer = history.isEmpty() ? "Ninguém" : history.get(0).getPlayerName();
+        String previousBalance = history.isEmpty() ? plugin.formatCurrency(0) : plugin.formatCurrency(history.get(0).getBalance());
+
+        // Envia todas as mensagens formatadas
+        for (String rawMessage : plugin.getMessages().getStringList("notifications.new_magnata")) {
+            String message = plugin.formatMessage(rawMessage)
                 .replace("%player%", playerName)
-                .replace("%balance%", balanceFormatted);
-            Bukkit.getServer().broadcastMessage(message);
-        });
+                .replace("%balance%", balanceFormatted)
+                .replace("%previous_player%", previousPlayer)
+                .replace("%previous_balance%", previousBalance);
+            
+            Bukkit.broadcastMessage(message);
+        }
     }
 
     private void loadHistory() {

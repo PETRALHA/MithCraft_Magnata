@@ -1,16 +1,15 @@
 # Configurações gerais
 settings:
-  use_prefix: true  # Define se o prefixo será aplicado automaticamente
+  use_prefix: true
 
-# Estrutura de mensagens
 formats:
   prefix: "&8[&6Magnata&8]&7 "
   date: "dd/MM/yyyy HH:mm"
   currency: "$%.2f"
 
-# Mensagens de comando
 commands:
   magnata:
+    usage: "{prefix}&6Uso: /magnata [help|history|reload]"
     current:
       empty: "{prefix}&7Atualmente não há um magnata definido."
       header: "{prefix}&8&m----------------&6 Magnata Atual &8&m----------------"
@@ -30,7 +29,6 @@ commands:
       success: "{prefix}&aConfigurações recarregadas com sucesso!"
       failure: "{prefix}&cFalha ao recarregar. Verifique os logs."
 
-# Sistema de notificações
 notifications:
   new_magnata:
     - ""
@@ -38,21 +36,22 @@ notifications:
     - "{prefix}&fParabéns a &6%player% &7(&6%balance%&7)"
     - "{prefix}&7Anterior: &f%previous_player% &7(&f%previous_balance%&7)"
     - ""
+  no_previous_magnata: "{prefix}&7(Nenhum magnata anterior)"
 
-# Mensagens de erro
 errors:
   no_permission: "{prefix}&cVocê não tem permissão para isso!"
   player_not_found: "{prefix}&cJogador não encontrado!"
   economy_error: "{prefix}&cSistema econômico indisponível"
   data_error: "{prefix}&cErro ao processar dados"
-  invalid_command: "{prefix}&cComando inválido. Use &6/magnata help &cpara ver os comandos disponíveis."
+  invalid_command: "{prefix}&cComando inválido. Use &6/magnata help &cpara ajuda."
+  command_failed: "{prefix}&cFalha ao executar comando."
 
-# Menu de ajuda
 help:
   header: "{prefix}&8&m----------------&6 Ajuda &8&m----------------"
   content:
     - "{prefix}&6/magnata &f- Mostra o magnata atual"
-    - "{prefix}&6/magnata history <página> &f- Histórico de magnatas"
+    - "{prefix}&6/magnata history &f- Histórico de magnatas"
     - "{prefix}&6/magnata reload &f- Recarrega o plugin"
     - "{prefix}&6/magnata help &f- Mostra esta ajuda"
   footer: "{prefix}&8&m----------------------------------------"
+  empty: "{prefix}&cNenhum comando de ajuda disponível."
