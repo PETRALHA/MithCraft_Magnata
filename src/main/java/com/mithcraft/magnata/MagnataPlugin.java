@@ -50,7 +50,7 @@ public final class MagnataPlugin extends JavaPlugin {
             setupLuckPerms();
             setupPlaceholderAPI();
             initializeManagers();
-            registerCommands();
+            registerCommands(); // Método corrigido
             startMagnataChecker();
 
             getComponentLogger().info(formatComponent("<gradient:gold:white>[MithCraftMagnata]</gradient> <green>Plugin ativado com sucesso!"));
@@ -72,7 +72,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    // ----- Métodos Públicos (Corrigidos) -----
+    // ----- Métodos de Inicialização -----
     public boolean loadConfigurations() {
         try {
             saveDefaultConfig();
@@ -113,7 +113,6 @@ public final class MagnataPlugin extends JavaPlugin {
             getLogger().info("PlaceholderAPI registrado com sucesso");
         }
     }
-    // -----------------------------------------
 
     private void setupLuckPerms() {
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
@@ -128,11 +127,13 @@ public final class MagnataPlugin extends JavaPlugin {
         this.rewardManager = new RewardManager(this);
     }
 
+    // ----- Método Corrigido para Registrar Comandos -----
     private void registerCommands() {
-        new MagnataCommand(this);
-        new MagnataHelpCommand(this);
-        new MagnataHistoryCommand(this);
-        new MagnataReloadCommand(this);
+        // Registrar o comando principal e definir seu executor
+        Objects.requireNonNull(getCommand("magnata")).setExecutor(new MagnataCommand(this));
+        
+        // Registrar aliases se necessário
+        getCommand("mg").setExecutor(new MagnataCommand(this));
     }
 
     private void startMagnataChecker() {
@@ -150,17 +151,18 @@ public final class MagnataPlugin extends JavaPlugin {
     }
 
     // ----- Sistemas de Formatação -----
-    public String formatMessage(String message) {
+    public String formatMessage(String path) {
+        String message = messages.getString(path, path);
         return legacySerializer.serialize(
             miniMessage.deserialize(
-                getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message
+                messages.getString("prefix", "<gold>[Magnata]</gold> ") + message
             )
         ).replace('§', '&');
     }
 
     public Component formatComponent(String message) {
         return miniMessage.deserialize(
-            getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message
+            messages.getString("prefix", "<gold>[Magnata]</gold> ") + message
         );
     }
 
