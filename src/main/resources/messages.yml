@@ -1,3 +1,7 @@
+# Configurações gerais
+settings:
+  use_prefix: true  # Define se o prefixo será aplicado automaticamente
+
 # Estrutura de mensagens
 formats:
   prefix: "&8[&6Magnata&8]&7 "
@@ -8,45 +12,45 @@ formats:
 commands:
   magnata:
     current:
-      header: "&8&m----------------&6 Magnata Atual &8&m----------------"
+      header: "{prefix}&8&m----------------&6 Magnata Atual &8&m----------------"
       content:
-        - "&6Jogador: &f%player%"
-        - "&6Fortuna: &f%balance%"
-        - "&6Desde: &f%date%"
-      footer: "&8&m----------------------------------------"
+        - "{prefix}&6Jogador: &f%player%"
+        - "{prefix}&6Fortuna: &f%balance%"
+        - "{prefix}&6Desde: &f%date%"
+      footer: "{prefix}&8&m----------------------------------------"
     
     history:
-      header: "&8&m-------------&6 Histórico (Página %page%/%total%) &8&m-------------"
-      entry: "&8#%position% &6%player% &7- &f%balance% &7(&f%date%&7)"
-      footer: "&8&m----------------------------------------"
-      empty: "&eNenhum registro histórico encontrado."
+      header: "{prefix}&8&m-------------&6 Histórico (Página %page%/%total%) &8&m-------------"
+      entry: "{prefix}&8#%position% &6%player% &7- &f%balance% &7(&f%date%&7)"
+      footer: "{prefix}&8&m----------------------------------------"
+      empty: "{prefix}&eNenhum registro histórico encontrado."
     
     reload:
-      success: "&aConfigurações recarregadas com sucesso!"
-      failure: "&cFalha ao recarregar. Verifique os logs."
+      success: "{prefix}&aConfigurações recarregadas com sucesso!"
+      failure: "{prefix}&cFalha ao recarregar. Verifique os logs."
 
 # Sistema de notificações
 notifications:
   new_magnata:
     - ""
-    - "&6&lNOVO MAGNATA!"
-    - "&fParabéns a &6%player% &7(&6%balance%&7)"
-    - "&7Anterior: &f%previous_player% &7(&f%previous_balance%&7)"
+    - "{prefix}&6&lNOVO MAGNATA!"
+    - "{prefix}&fParabéns a &6%player% &7(&6%balance%&7)"
+    - "{prefix}&7Anterior: &f%previous_player% &7(&f%previous_balance%&7)"
     - ""
 
 # Mensagens de erro
 errors:
-  no_permission: "&cVocê não tem permissão para isso!"
-  player_not_found: "&cJogador não encontrado!"
-  economy_error: "&cSistema econômico indisponível"
-  data_error: "&cErro ao processar dados"
+  no_permission: "{prefix}&cVocê não tem permissão para isso!"
+  player_not_found: "{prefix}&cJogador não encontrado!"
+  economy_error: "{prefix}&cSistema econômico indisponível"
+  data_error: "{prefix}&cErro ao processar dados"
 
 # Menu de ajuda
 help:
-  header: "&8&m----------------&6 Ajuda &8&m----------------"
+  header: "{prefix}&8&m----------------&6 Ajuda &8&m----------------"
   content:
-    - "&6/magnata &f- Mostra o magnata atual"
-    - "&6/magnata history <página> &f- Histórico de magnatas"
-    - "&6/magnata reload &f- Recarrega o plugin"
-    - "&6/magnata help &f- Mostra esta ajuda"
-  footer: "&8&m----------------------------------------"
+    - "{prefix}&6/magnata &f- Mostra o magnata atual"
+    - "{prefix}&6/magnata history <página> &f- Histórico de magnatas"
+    - "{prefix}&6/magnata reload &f- Recarrega o plugin"
+    - "{prefix}&6/magnata help &f- Mostra esta ajuda"
+  footer: "{prefix}&8&m----------------------------------------"

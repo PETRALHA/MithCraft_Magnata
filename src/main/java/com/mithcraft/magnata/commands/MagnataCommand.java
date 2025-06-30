@@ -5,9 +5,15 @@ import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class MagnataCommand implements CommandExecutor {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class MagnataCommand implements CommandExecutor, TabCompleter {
     private final MagnataPlugin plugin;
 
     public MagnataCommand(MagnataPlugin plugin) {
@@ -22,27 +28,21 @@ public class MagnataCommand implements CommandExecutor {
 
         switch (args[0].toLowerCase()) {
             case "help":
-                if (!sender.hasPermission("magnata.help")) {
-                    sender.sendMessage(plugin.formatMessage("no_permission"));
-                    return true;
-                }
+                if (!checkPermission(sender, "magnata.help")) return true;
                 return new MagnataHelpCommand(plugin).onCommand(sender, cmd, label, args);
                 
             case "history":
             case "hist":
             case "list":
-                if (!sender.hasPermission("magnata.history")) {
-                    sender.sendMessage(plugin.formatMessage("no_permission"));
-                    return true;
-                }
+                if (!checkPermission(sender, "magnata.history")) return true;
                 return new MagnataHistoryCommand(plugin).onCommand(sender, cmd, label, args);
                 
             case "reload":
-                if (!sender.hasPermission("magnata.reload")) {
-                    sender.sendMessage(plugin.formatMessage("no_permission"));
-                    return true;
-                }
-                return new MagnataReloadCommand(plugin).onCommand(sender, cmd, label, args);
+                if (!checkPermission(sender, "magnata.reload")) return true;
+                plugin.reloadConfig();
+                plugin.loadConfigurations();
+                sender.sendMessage(plugin.formatMessage("commands.magnata.reload.success"));
+                return true;
                 
             default:
                 return showCurrentMagnata(sender);
@@ -50,22 +50,43 @@ public class MagnataCommand implements CommandExecutor {
     }
 
     private boolean showCurrentMagnata(CommandSender sender) {
-        if (!sender.hasPermission("magnata.command")) {
-            sender.sendMessage(plugin.formatMessage("no_permission"));
-            return true;
-        }
+        if (!checkPermission(sender, "magnata.command")) return true;
 
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
         if (current == null) {
-            sender.sendMessage(plugin.formatMessage("no_magnata"));
+            sender.sendMessage(plugin.formatMessage("commands.magnata.current.empty"));
             return true;
         }
 
-        sender.sendMessage(plugin.formatMessage("current_magnata")
-            .replace("%player%", current.getPlayerName())
-            .replace("%balance%", plugin.formatCurrency(current.getBalance()))
-            .replace("%date%", current.getFormattedDate()));
+        // Envia todas as mensagens formatadas
+        plugin.getMessages().getStringList("commands.magnata.current.content").forEach(line -> {
+            sender.sendMessage(plugin.formatMessage(line)
+                .replace("%player%", current.getPlayerName())
+                .replace("%balance%", plugin.formatCurrency(current.getBalance()))
+                .replace("%date%", current.getFormattedDate()));
+        });
         
         return true;
+    }
+
+    private boolean checkPermission(CommandSender sender, String permission) {
+        if (!sender.hasPermission(permission)) {
+            sender.sendMessage(plugin.formatMessage("errors.no_permission"));
+            return false;
+        }
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
+        if (args.length == 1) {
+            List<String> completions = new ArrayList<>();
+            if (sender.hasPermission("magnata.help")) completions.add("help");
+            if (sender.hasPermission("magnata.history")) completions.add("history");
+            if (sender.hasPermission("magnata.reload")) completions.add("reload");
+            return completions;
+        }
+        return new ArrayList<>();
     }
 }

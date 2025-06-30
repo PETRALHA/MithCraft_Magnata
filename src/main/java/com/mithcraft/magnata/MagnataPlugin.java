@@ -3,12 +3,10 @@ package com.mithcraft.magnata;
 import com.mithcraft.magnata.commands.*;
 import com.mithcraft.magnata.managers.*;
 import com.mithcraft.magnata.placeholders.MagnataExpansion;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.milkbowl.vault.economy.Economy;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -18,24 +16,26 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 
 public final class MagnataPlugin extends JavaPlugin {
-    // Managers
     private HistoryManager historyManager;
     private RewardManager rewardManager;
     private Economy economy;
     private LuckPerms luckPerms;
     private FileConfiguration messages;
     private boolean placeholderApiEnabled = false;
-    
-    // Sistemas de formatação
-    private final MiniMessage miniMessage = MiniMessage.miniMessage();
-    private final LegacyComponentSerializer legacySerializer = LegacyComponentSerializer.legacySection();
 
     @Override
     public void onEnable() {
+        // Garante que a pasta do plugin existe
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+
         try {
             if (!loadConfigurations()) {
                 shutdown("Falha ao carregar configurações");
@@ -50,10 +50,10 @@ public final class MagnataPlugin extends JavaPlugin {
             setupLuckPerms();
             setupPlaceholderAPI();
             initializeManagers();
-            registerCommands(); // Método corrigido
+            registerCommands();
             startMagnataChecker();
 
-            getComponentLogger().info(formatComponent("<gradient:gold:white>[MithCraftMagnata]</gradient> <green>Plugin ativado com sucesso!"));
+            getLogger().info("Plugin ativado com sucesso!");
 
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "Erro crítico na inicialização:", e);
@@ -63,7 +63,7 @@ public final class MagnataPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        getComponentLogger().info(formatComponent("<gold>[MithCraftMagnata]</gold> <gray>Desativando plugin..."));
+        getLogger().info("Desativando plugin...");
         if (placeholderApiEnabled) {
             new MagnataExpansion(this).unregister();
         }
@@ -72,15 +72,21 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    // ----- Métodos de Inicialização -----
     public boolean loadConfigurations() {
         try {
+            // Configuração principal
             saveDefaultConfig();
+            reloadConfig();
+
+            // Arquivo de mensagens
             File messagesFile = new File(getDataFolder(), "messages.yml");
             if (!messagesFile.exists()) {
                 try (InputStream in = getResource("messages.yml")) {
-                    if (in != null) Files.copy(in, messagesFile.toPath());
-                    else saveResource("messages.yml", false);
+                    if (in != null) {
+                        Files.copy(in, messagesFile.toPath());
+                    } else {
+                        saveResource("messages.yml", false);
+                    }
                 }
             }
             messages = YamlConfiguration.loadConfiguration(messagesFile);
@@ -93,25 +99,15 @@ public final class MagnataPlugin extends JavaPlugin {
 
     public boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            getLogger().severe("Vault não encontrado!");
             return false;
         }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
-            getLogger().severe("Nenhum plugin de economia encontrado!");
             return false;
         }
         economy = rsp.getProvider();
         getLogger().info("Economia conectada: " + economy.getName());
         return true;
-    }
-
-    public void setupPlaceholderAPI() {
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new MagnataExpansion(this).register();
-            placeholderApiEnabled = true;
-            getLogger().info("PlaceholderAPI registrado com sucesso");
-        }
     }
 
     private void setupLuckPerms() {
@@ -122,18 +118,22 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
+    private void setupPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new MagnataExpansion(this).register();
+            placeholderApiEnabled = true;
+            getLogger().info("PlaceholderAPI registrado com sucesso");
+        }
+    }
+
     private void initializeManagers() {
         this.historyManager = new HistoryManager(this);
         this.rewardManager = new RewardManager(this);
     }
 
-    // ----- Método Corrigido para Registrar Comandos -----
     private void registerCommands() {
-        // Registrar o comando principal e definir seu executor
         Objects.requireNonNull(getCommand("magnata")).setExecutor(new MagnataCommand(this));
-        
-        // Registrar aliases se necessário
-        getCommand("mg").setExecutor(new MagnataCommand(this));
+        Objects.requireNonNull(getCommand("mg")).setExecutor(new MagnataCommand(this));
     }
 
     private void startMagnataChecker() {
@@ -150,27 +150,32 @@ public final class MagnataPlugin extends JavaPlugin {
         getServer().getPluginManager().disablePlugin(this);
     }
 
-    // ----- Sistemas de Formatação -----
+    // ===== SISTEMA DE MENSAGENS =====
     public String formatMessage(String path) {
-        String message = messages.getString(path, path);
-        return legacySerializer.serialize(
-            miniMessage.deserialize(
-                messages.getString("prefix", "<gold>[Magnata]</gold> ") + message
-            )
-        ).replace('§', '&');
+        String message = messages.getString(path, "&cMensagem não encontrada: " + path);
+        String prefix = messages.getString("formats.prefix", "");
+        
+        // Substitui {prefix} apenas se existir na mensagem
+        if (message.contains("{prefix}")) {
+            message = message.replace("{prefix}", prefix);
+        }
+        
+        return ChatColor.translateAlternateColorCodes('&', message);
     }
 
-    public Component formatComponent(String message) {
-        return miniMessage.deserialize(
-            messages.getString("prefix", "<gold>[Magnata]</gold> ") + message
-        );
+    public String formatMessage(String path, Map<String, String> replacements) {
+        String message = formatMessage(path);
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            message = message.replace(entry.getKey(), entry.getValue());
+        }
+        return message;
     }
 
     public String formatCurrency(double amount) {
         return economy != null ? economy.format(amount) : String.format("%,.2f", amount);
     }
 
-    // ----- Getters -----
+    // ===== GETTERS =====
     public HistoryManager getHistoryManager() { return historyManager; }
     public RewardManager getRewardManager() { return rewardManager; }
     public Economy getEconomy() { return economy; }
