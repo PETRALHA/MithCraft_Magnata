@@ -110,15 +110,15 @@ public final class MagnataPlugin extends JavaPlugin {
         return true;
     }
 
-    private void setupLuckPerms() {
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+    public void setupLuckPerms() {
+        RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             luckPerms = provider.getProvider();
             getLogger().info("LuckPerms conectado com sucesso");
         }
     }
 
-    private void setupPlaceholderAPI() {
+    public void setupPlaceholderAPI() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new MagnataExpansion(this).register();
             placeholderApiEnabled = true;

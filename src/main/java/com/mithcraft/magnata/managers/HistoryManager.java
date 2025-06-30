@@ -27,8 +27,8 @@ public class HistoryManager {
         this.history = new ArrayList<>();
         this.topPlayersCache = new ArrayList<>();
         this.historyFile = new File(plugin.getDataFolder(), "history.yml");
-        loadHistory();
-        updateTopPlayersCache();
+        this.loadHistory();
+        this.updateTopPlayersCache();
     }
 
     public void checkForNewMagnata() {
@@ -37,15 +37,13 @@ public class HistoryManager {
             return;
         }
 
-        // Atualiza o cache de top players primeiro
-        updateTopPlayersCache();
+        this.updateTopPlayersCache();
 
         if (topPlayersCache.isEmpty()) {
             plugin.getLogger().warning("Nenhum jogador encontrado para verificar magnata");
             return;
         }
 
-        // O primeiro da lista é o mais rico
         OfflinePlayer richestPlayer = topPlayersCache.get(0);
         double balance = plugin.getEconomy().getBalance(richestPlayer);
         
@@ -60,7 +58,7 @@ public class HistoryManager {
             Arrays.stream(Bukkit.getOfflinePlayers())
                 .filter(Objects::nonNull)
                 .filter(p -> p.hasPlayedBefore() && p.getName() != null)
-                .sorted(Comparator.comparingDouble(p -> -plugin.getEconomy().getBalance(p))) // Ordena do maior para o menor
+                .sorted(Comparator.comparingDouble(p -> -plugin.getEconomy().getBalance(p)))
                 .collect(Collectors.toList())
         );
     }
@@ -81,16 +79,89 @@ public class HistoryManager {
 
         if (currentMagnata != null) {
             history.add(0, currentMagnata);
-            trimHistory();
+            this.trimHistory();
         }
 
         currentMagnata = newMagnata;
-        saveHistory();
-        updateTopPlayersCache();
-        giveRewardsAndNotify(player, balance);
+        this.saveHistory();
+        this.updateTopPlayersCache();
+        this.giveRewardsAndNotify(player, balance);
     }
 
-    // ... (métodos trimHistory, giveRewardsAndNotify, loadHistory, saveHistory permanecem iguais) ...
+    private void trimHistory() {
+        int maxHistory = plugin.getConfig().getInt("settings.max_history_size", 10);
+        if (history.size() > maxHistory) {
+            history.subList(maxHistory, history.size()).clear();
+        }
+    }
+
+    private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
+        plugin.getRewardManager().giveBecomeMagnataRewards(player);
+        
+        String playerName = Objects.requireNonNull(player.getName());
+        String balanceFormatted = plugin.formatCurrency(balance);
+        
+        plugin.getMessages().getStringList("notifications.new_magnata").forEach(msg -> {
+            String message = plugin.formatMessage(msg)
+                .replace("%player%", playerName)
+                .replace("%balance%", balanceFormatted);
+            Bukkit.getServer().broadcastMessage(message);
+        });
+    }
+
+    private void loadHistory() {
+        if (!historyFile.exists()) return;
+
+        try {
+            YamlConfiguration config = YamlConfiguration.loadConfiguration(historyFile);
+            
+            if (config.isConfigurationSection("current")) {
+                ConfigurationSection section = config.getConfigurationSection("current");
+                if (section != null) {
+                    currentMagnata = MagnataRecord.deserialize(section.getValues(false));
+                }
+            }
+            
+            if (config.isList("history")) {
+                config.getList("history", Collections.emptyList()).stream()
+                    .filter(entry -> entry instanceof Map)
+                    .map(entry -> (Map<?, ?>) entry)
+                    .map(rawMap -> {
+                        Map<String, Object> safeMap = new LinkedHashMap<>();
+                        rawMap.forEach((key, value) -> safeMap.put(String.valueOf(key), value));
+                        return safeMap;
+                    })
+                    .forEach(map -> {
+                        try {
+                            history.add(MagnataRecord.deserialize(map));
+                        } catch (IllegalArgumentException e) {
+                            plugin.getLogger().warning("Entrada inválida no histórico: " + e.getMessage());
+                        }
+                    });
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Erro ao carregar histórico", e);
+        }
+    }
+
+    private void saveHistory() {
+        try {
+            YamlConfiguration config = new YamlConfiguration();
+            
+            if (currentMagnata != null) {
+                config.createSection("current", currentMagnata.serialize());
+            }
+            
+            List<Map<String, Object>> historyData = history.stream()
+                .map(MagnataRecord::serialize)
+                .collect(Collectors.toList());
+            
+            config.set("history", historyData);
+            config.save(historyFile);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "Erro ao salvar histórico", e);
+        }
+    }
 
     public List<MagnataRecord> getHistory() {
         List<MagnataRecord> fullHistory = new ArrayList<>();
@@ -107,30 +178,25 @@ public class HistoryManager {
 
     public void reload() {
         history.clear();
-        loadHistory();
-        updateTopPlayersCache();
+        this.loadHistory();
+        this.updateTopPlayersCache();
     }
 
-    // ===== NOVOS MÉTODOS PARA RANKING DINÂMICO =====
-    
+    // ===== Métodos de Ranking =====
     public String getPlayerAtPosition(int position) {
-        if (position <= 0 || position > topPlayersCache.size()) {
-            return "N/A";
-        }
+        if (position <= 0 || position > topPlayersCache.size()) return "N/A";
         OfflinePlayer player = topPlayersCache.get(position - 1);
         return player.getName() != null ? player.getName() : "N/A";
     }
 
     public double getBalanceAtPosition(int position) {
-        if (position <= 0 || position > topPlayersCache.size()) {
-            return 0.0;
-        }
+        if (position <= 0 || position > topPlayersCache.size()) return 0.0;
         return plugin.getEconomy().getBalance(topPlayersCache.get(position - 1));
     }
 
     public String getDateAtPosition(int position) {
-        // Implementação depende de como você quer formatar a data
-        return "N/A"; // Substituir por lógica real
+        // Implementação depende do seu sistema de datas
+        return "N/A";
     }
 
     public String getFormattedTopLine(int position) {
@@ -154,6 +220,6 @@ public class HistoryManager {
                 return i + 1;
             }
         }
-        return -1; // Não encontrado
+        return -1;
     }
 }
