@@ -7,8 +7,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class MagnataCommand implements CommandExecutor, TabCompleter {
     private final MagnataPlugin plugin;
@@ -17,7 +20,7 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
     private final MagnataReloadCommand reloadCommand;
 
     public MagnataCommand(MagnataPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
         this.helpCommand = new MagnataHelpCommand(plugin);
         this.historyCommand = new MagnataHistoryCommand(plugin);
         this.reloadCommand = new MagnataReloadCommand(plugin);
@@ -25,78 +28,93 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (args.length == 0) {
-            return showCurrentMagnata(sender);
-        }
-
-        switch (args[0].toLowerCase()) {
-            case "help":
-                if (!sender.hasPermission(plugin.getConfig().getString("permissions.help", "magnata.help"))) {
-                    sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-                    return true;
-                }
-                return helpCommand.onCommand(sender, cmd, label, args);
-                
-            case "hist":
-            case "list":
-            case "history":
-                if (!sender.hasPermission(plugin.getConfig().getString("permissions.history", "magnata.history"))) {
-                    sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-                    return true;
-                }
-                return historyCommand.onCommand(sender, cmd, label, args);
-                
-            case "reload":
-                if (!sender.hasPermission(plugin.getConfig().getString("permissions.reload", "magnata.reload"))) {
-                    sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-                    return true;
-                }
-                return reloadCommand.onCommand(sender, cmd, label, args);
-                
-            default:
+        try {
+            if (args.length == 0) {
                 return showCurrentMagnata(sender);
+            }
+
+            String subCommand = args[0].toLowerCase();
+            switch (subCommand) {
+                case "help":
+                    return checkPermissionAndExecute(sender, "help", () -> 
+                        helpCommand.onCommand(sender, cmd, label, args));
+                    
+                case "hist":
+                case "list":
+                case "history":
+                    return checkPermissionAndExecute(sender, "history", () -> 
+                        historyCommand.onCommand(sender, cmd, label, args));
+                    
+                case "reload":
+                    return checkPermissionAndExecute(sender, "reload", () -> 
+                        reloadCommand.onCommand(sender, cmd, label, args));
+                    
+                default:
+                    return showCurrentMagnata(sender);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().log(java.util.logging.Level.SEVERE, "Erro ao executar comando magnata", e);
+            sender.sendMessage(plugin.formatMessage("errors.command_failed"));
+            return true;
         }
     }
 
+    private boolean checkPermissionAndExecute(CommandSender sender, String permissionType, CommandAction action) {
+        String permission = plugin.getConfig().getString("permissions." + permissionType, "magnata." + permissionType);
+        if (!sender.hasPermission(permission)) {
+            sender.sendMessage(plugin.formatMessage("errors.no_permission"));
+            return true;
+        }
+        return action.execute();
+    }
+
     private boolean showCurrentMagnata(CommandSender sender) {
-        if (!sender.hasPermission(plugin.getConfig().getString("permissions.base", "magnata.command"))) {
+        String permission = plugin.getConfig().getString("permissions.base", "magnata.command");
+        if (!sender.hasPermission(permission)) {
             sender.sendMessage(plugin.formatMessage("errors.no_permission"));
             return true;
         }
 
-        if (plugin.getHistoryManager().getCurrentMagnata() == null) {
-            sender.sendMessage(plugin.formatMessage("&eNenhum magnata definido ainda."));
+        MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
+        if (current == null) {
+            sender.sendMessage(plugin.formatMessage("magnata.none_defined"));
             return true;
         }
 
         plugin.getMessages().getStringList("current_magnata").forEach(line -> 
             sender.sendMessage(plugin.formatMessage(line)
-                .replace("%player%", plugin.getHistoryManager().getCurrentMagnata().getPlayerName())
-                .replace("%balance%", plugin.formatCurrency(plugin.getHistoryManager().getCurrentMagnata().getBalance()))
-                .replace("%date%", plugin.getHistoryManager().getCurrentMagnata().getFormattedDate())
-            )
-        );
+                .replace("%player%", current.getPlayerName())
+                .replace("%balance%", plugin.formatCurrency(current.getBalance()))
+                .replace("%date%", current.getFormattedDate())
+        ));
         return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String alias, String[] args) {
-        List<String> completions = new ArrayList<>();
-        
-        if (args.length == 1) {
-            if (sender.hasPermission(plugin.getConfig().getString("permissions.help", "magnata.help"))) {
-                completions.add("help");
-            }
-            if (sender.hasPermission(plugin.getConfig().getString("permissions.history", "magnata.history"))) {
-                completions.add("history");
-                completions.add("hist");
-                completions.add("list");
-            }
-            if (sender.hasPermission(plugin.getConfig().getString("permissions.reload", "magnata.reload"))) {
-                completions.add("reload");
-            }
+        if (args.length != 1) {
+            return Collections.emptyList();
         }
+
+        List<String> completions = new ArrayList<>();
+        addCompletionIfPermitted(sender, completions, "help");
+        addCompletionIfPermitted(sender, completions, "history", "hist", "list");
+        addCompletionIfPermitted(sender, completions, "reload");
         
         return completions;
+    }
+
+    private void addCompletionIfPermitted(CommandSender sender, List<String> completions, String... options) {
+        String permissionType = options[0];
+        String permission = plugin.getConfig().getString("permissions." + permissionType, "magnata." + permissionType);
+        
+        if (sender.hasPermission(permission)) {
+            Collections.addAll(completions, options);
+        }
+    }
+
+    @FunctionalInterface
+    private interface CommandAction {
+        boolean execute();
     }
 }

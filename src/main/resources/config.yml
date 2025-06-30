@@ -1,36 +1,48 @@
-# Configurações de Comandos
-commands:
-  main: "magnata"  # Nome do comando principal (não alterável)
-  history:
-    command: "history"  # Subcomando principal
-    aliases: ["hist", "list"]  # Aliases alternativos
-  reload:
-    command: "reload"   # Subcomando sem aliases
-  help:
-    command: "help"     # Subcomando sem aliases
+# Configurações principais
+settings:
+  # Sistema de verificação
+  check_interval: 300  # Em segundos (5 minutos)
+  max_history_size: 10
+  debug: false
 
-# Sistema de Recompensas
+  # Paginação (novo)
+  pagination:
+    entries_per_page: 5
+    max_pages: 5
+
+# Sistema de recompensas
 rewards:
   on_become:
     - "eco give %player% 100"
     - "lp user %player% parent add magnata"
-    - "lp user %magnata_previous_name% parent remove magnata"
+    - "lp user %previous_magnata% parent remove magnata" # Remove magnata anterior
   periodic:
-    interval_minutes: 60
+    interval: 60  # Em minutos
     commands:
       - "eco give %player% 500"
       - "effect give %player% strength 30 1"
 
-# Configurações Gerais
-settings:
-  check_interval_seconds: 300  # Verificação do magnata atual
-  max_history_size: 10         # Limite de registros históricos
-  use_placeholderapi: true     # Integração com PlaceholderAPI
-  debug: false                 # Modo desenvolvimento
+# Integrações
+integrations:
+  placeholder_api: true
+  luckperms: true
+  vault: true
 
-# Permissões (opcional - prioriza o plugin.yml)
+# Permissões
 permissions:
-  base: "magnata.command"
-  help: "magnata.help"
-  history: "magnata.history"
-  reload: "magnata.reload"
+  base: magnata.command
+  help: magnata.help
+  history: magnata.history
+  reload: magnata.reload
+  notify: magnata.notify  # Nova permissão para receber notificações
+
+# Comandos (para referência)
+commands:
+  main: magnata
+  aliases: []
+  sub_commands:
+    help:
+      aliases: [ajuda]
+    history:
+      aliases: [hist, list]
+    reload: []

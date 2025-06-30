@@ -15,8 +15,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public final class MagnataPlugin extends JavaPlugin {
@@ -35,101 +37,92 @@ public final class MagnataPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            // 1. Carregar configurações
-            if (!loadConfigurations()) {
-                shutdown("Falha ao carregar configurações");
-                return;
-            }
-
-            // 2. Verificar dependências
-            if (!setupEconomy()) {
-                shutdown("Economia (Vault) não encontrada");
-                return;
-            }
-            setupLuckPerms();
-            setupPlaceholderAPI();
-
-            // 3. Inicializar componentes
-            initializeManagers();
-            registerCommands();
-            startMagnataChecker();
-
-            getComponentLogger().info(formatComponent("<gradient:gold:white>[MithCraftMagnata]</gradient> <green>Plugin ativado com sucesso!"));
-            
+            initializePlugin();
         } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro crítico na inicialização:", e);
-            shutdown("Erro na inicialização");
+            handleStartupError(e);
         }
     }
 
-    @Override
-    public void onDisable() {
-        getComponentLogger().info(formatComponent("<gold>[MithCraftMagnata]</gold> <gray>Desativando plugin..."));
-        if (placeholderApiEnabled) {
-            new MagnataExpansion(this).unregister();
+    private void initializePlugin() throws Exception {
+        // 1. Carregar configurações
+        if (!loadConfigurations()) {
+            throw new IllegalStateException("Falha ao carregar configurações");
         }
+
+        // 2. Verificar dependências críticas
+        verifyCriticalDependencies();
+
+        // 3. Inicializar componentes
+        initializeComponents();
+
+        getComponentLogger().info(formatComponent(
+            "<gradient:gold:white>[MithCraftMagnata]</gradient> <green>Ativo! " +
+            "<gray>(Economia: " + economy.getName() + ")"
+        ));
     }
 
-    // ----- Sistemas de Formatação -----
-    public String formatMessage(String message) {
-        return legacySerializer.serialize(
-            miniMessage.deserialize(getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message)
-        ).replace('§', '&');
-    }
-
-    public Component formatComponent(String message) {
-        return miniMessage.deserialize(
-            getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message
-        );
-    }
-
-    public String formatMessageLegacy(String message) {
-        return formatMessage(message); // Mantido para compatibilidade
-    }
-
-    public String formatCurrency(double amount) {
-        return economy != null ? economy.format(amount) : String.valueOf(amount);
-    }
-
-    // ----- Configurações e Inicialização -----
-    public boolean loadConfigurations() {
+    private boolean loadConfigurations() {
         try {
+            // Configuração principal
             saveDefaultConfig();
+            
+            // Arquivo de mensagens
             File messagesFile = new File(getDataFolder(), "messages.yml");
             if (!messagesFile.exists()) {
                 try (InputStream in = getResource("messages.yml")) {
-                    if (in != null) Files.copy(in, messagesFile.toPath());
-                    else saveResource("messages.yml", false);
+                    if (in != null) {
+                        Files.copy(in, messagesFile.toPath());
+                    } else {
+                        saveResource("messages.yml", false);
+                    }
                 }
             }
             messages = YamlConfiguration.loadConfiguration(messagesFile);
+            
             return true;
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro ao carregar configurações:", e);
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Falha crítica ao carregar configurações:", e);
             return false;
+        }
+    }
+
+    private void verifyCriticalDependencies() {
+        if (!setupEconomy()) {
+            throw new IllegalStateException("Dependência econômica não disponível");
         }
     }
 
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            getLogger().severe("Vault não encontrado!");
-            return false;
-        }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
-            getLogger().severe("Nenhum plugin de economia encontrado!");
+            getLogger().severe("Nenhum plugin de economia encontrado via Vault");
             return false;
         }
         economy = rsp.getProvider();
-        getLogger().info("Economia conectada: " + economy.getName());
         return true;
+    }
+
+    private void initializeComponents() {
+        // Inicializar managers
+        this.historyManager = new HistoryManager(this);
+        this.rewardManager = new RewardManager(this);
+
+        // Configurar integrações
+        setupLuckPerms();
+        setupPlaceholderAPI();
+
+        // Registrar comandos
+        registerCommands();
+        
+        // Iniciar tarefas agendadas
+        startScheduledTasks();
     }
 
     private void setupLuckPerms() {
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             luckPerms = provider.getProvider();
-            getLogger().info("LuckPerms conectado com sucesso!");
+            getLogger().info("Integração com LuckPerms estabelecida");
         }
     }
 
@@ -137,13 +130,8 @@ public final class MagnataPlugin extends JavaPlugin {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new MagnataExpansion(this).register();
             placeholderApiEnabled = true;
-            getLogger().info("PlaceholderAPI conectado com sucesso!");
+            getLogger().info("PlaceholderAPI registrado com sucesso");
         }
-    }
-
-    private void initializeManagers() {
-        this.historyManager = new HistoryManager(this);
-        this.rewardManager = new RewardManager(this);
     }
 
     private void registerCommands() {
@@ -153,16 +141,64 @@ public final class MagnataPlugin extends JavaPlugin {
         new MagnataReloadCommand(this);
     }
 
-    private void startMagnataChecker() {
-        // Implementação básica - ajuste conforme necessário
+    private void startScheduledTasks() {
+        // Verificação periódica do magnata
+        int interval = getConfig().getInt("settings.check_interval_seconds", 300) * 20;
         Bukkit.getScheduler().runTaskTimer(this, () -> {
-            // Lógica de verificação do magnata
-            getLogger().info("Verificação periódica do magnata executada");
-        }, 20L * 60, 20L * 60 * 5); // A cada 5 minutos
+            if (economy != null) {
+                historyManager.checkForNewMagnata();
+            }
+        }, interval, interval);
     }
 
-    private void shutdown(String reason) {
-        getLogger().severe(reason);
+    @Override
+    public void onDisable() {
+        getComponentLogger().info(formatComponent(
+            "<gold>[MithCraftMagnata]</gold> <gray>Desativando..."
+        ));
+        
+        if (placeholderApiEnabled) {
+            new MagnataExpansion(this).unregister();
+        }
+        
+        // Limpar recursos
+        if (rewardManager != null) {
+            rewardManager.shutdown();
+        }
+    }
+
+    // ----- Sistemas de Formatação -----
+    public String formatMessage(String message) {
+        return legacySerializer.serialize(
+            miniMessage.deserialize(
+                getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message
+            )
+        ).replace('§', '&');
+    }
+
+    public Component formatComponent(String message) {
+        return miniMessage.deserialize(
+            getMessages().getString("prefix", "<gold>[Magnata]</gold> <gray>") + message
+        );
+    }
+
+    public String formatCurrency(double amount) {
+        return economy != null ? economy.format(amount) : String.format("%,.2f", amount);
+    }
+
+    // ----- Tratamento de Erros -----
+    private void handleStartupError(Exception e) {
+        getLogger().log(Level.SEVERE, """
+            ===========================================
+            ERRO CRÍTICO NA INICIALIZAÇÃO DO MAGNATA
+            Motivo: %s
+            ===========================================
+            """.formatted(e.getMessage()), e);
+        
+        shutdown();
+    }
+
+    private void shutdown() {
         getServer().getPluginManager().disablePlugin(this);
     }
 

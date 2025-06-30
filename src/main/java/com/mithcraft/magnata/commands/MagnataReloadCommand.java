@@ -6,47 +6,80 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class MagnataReloadCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
+    private final String permission;
 
     public MagnataReloadCommand(MagnataPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
+        this.permission = plugin.getConfig().getString("permissions.reload", "magnata.reload");
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        // Verificação de permissão
-        if (!sender.hasPermission(plugin.getConfig().getString("permissions.magnata_reload", "magnata.reload"))) {
-            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.no_permission")));
+        if (!hasPermission(sender)) {
             return true;
         }
 
-        try {
-            // Processo de recarregamento completo
-            plugin.reloadConfig(); // Recarrega config.yml
-            plugin.loadConfigurations(); // Recarrega messages.yml
-            
-            // Recarrega managers
-            plugin.getHistoryManager().reload();
-            plugin.getRewardManager().reload();
-            
-            // Reconecta com dependências
-            plugin.setupEconomy();
-            plugin.setupPlaceholderAPI();
+        return executeReload(sender);
+    }
 
-            // Mensagem de sucesso
-            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.reload_success")));
-            return true;
-        } catch (Exception e) {
-            // Tratamento de erro detalhado
-            plugin.getLogger().severe("Erro durante o reload: " + e.getMessage());
-            sender.sendMessage(plugin.formatMessage(plugin.getMessages().getString("errors.reload_failure")));
-            
-            // Log adicional no modo debug
-            if (plugin.getConfig().getBoolean("settings.debug", false)) {
-                e.printStackTrace();
-            }
+    private boolean hasPermission(CommandSender sender) {
+        if (!sender.hasPermission(permission)) {
+            sender.sendMessage(plugin.formatMessage(getMessage("errors.no_permission")));
             return false;
         }
+        return true;
+    }
+
+    private boolean executeReload(CommandSender sender) {
+        try {
+            reloadPluginComponents();
+            sender.sendMessage(plugin.formatMessage(getMessage("reload.success")));
+            return true;
+        } catch (Exception e) {
+            handleReloadError(sender, e);
+            return false;
+        }
+    }
+
+    private void reloadPluginComponents() throws Exception {
+        // 1. Recarregar configurações
+        plugin.reloadConfig();
+        plugin.loadConfigurations();
+
+        // 2. Reiniciar managers
+        plugin.getHistoryManager().reload();
+        plugin.getRewardManager().reload();
+
+        // 3. Reconectar dependências
+        verifyDependencies();
+    }
+
+    private void verifyDependencies() {
+        if (!plugin.setupEconomy()) {
+            throw new IllegalStateException("Falha ao reconectar com Vault/Economy");
+        }
+        plugin.setupPlaceholderAPI();
+    }
+
+    private void handleReloadError(CommandSender sender, Exception e) {
+        String errorMessage = getMessage("reload.failure");
+        plugin.getLogger().severe("Erro no reload: " + e.getMessage());
+        sender.sendMessage(plugin.formatMessage(errorMessage));
+
+        if (isDebugMode()) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getMessage(String path) {
+        return plugin.getMessages().getString(path, "&c" + path.replace(".", "_"));
+    }
+
+    private boolean isDebugMode() {
+        return plugin.getConfig().getBoolean("settings.debug", false);
     }
 }

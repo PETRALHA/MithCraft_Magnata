@@ -1,7 +1,6 @@
 package com.mithcraft.magnata.managers;
 
 import com.mithcraft.magnata.MagnataPlugin;
-import com.mithcraft.magnata.models.MagnataRecord;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -18,7 +17,7 @@ public class RewardManager {
     private final CommandSender console;
 
     public RewardManager(MagnataPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
         this.console = Bukkit.getConsoleSender();
         this.periodicRewardTask = startPeriodicRewards();
     }
@@ -26,14 +25,23 @@ public class RewardManager {
     public void giveBecomeMagnataRewards(OfflinePlayer newMagnata) {
         Objects.requireNonNull(newMagnata, "Jogador não pode ser nulo");
         
-        // 1. Registrar novo magnata
-        executeRewardCommands("on_become", newMagnata);
+        // Log detalhado antes de executar
+        logMagnataChange(newMagnata);
         
-        // 2. Remover o anterior (se existir e for diferente)
-        List<MagnataRecord> history = plugin.getHistoryManager().getHistory();
-        if (history.size() > 1) {
-            executeRewardCommand("lp user %magnata_previous_name% parent remove magnata");
-        }
+        // 1. Executar recompensas padrão
+        executeRewardCommands("on_become", newMagnata);
+    }
+
+    private void logMagnataChange(OfflinePlayer newMagnata) {
+        MagnataRecord previous = !plugin.getHistoryManager().getHistory().isEmpty() 
+            ? plugin.getHistoryManager().getHistory().get(0) 
+            : null;
+
+        plugin.getLogger().info("Atualização de Magnata:\n" +
+            "Novo: " + newMagnata.getName() + " (UUID: " + newMagnata.getUniqueId() + ")\n" +
+            "Anterior: " + (previous != null 
+                ? previous.getPlayerName() + " (UUID: " + previous.getPlayerUUID() + ")" 
+                : "Nenhum"));
     }
 
     private void executeRewardCommands(String rewardType, OfflinePlayer player) {
@@ -50,11 +58,12 @@ public class RewardManager {
         try {
             String formatted = formatCommand(command);
             logDebug("[Recompensa] Executando: " + formatted);
+            
             Bukkit.getScheduler().callSyncMethod(plugin, () -> 
                 Bukkit.dispatchCommand(console, formatted)
             );
         } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Erro ao executar: " + command, e);
+            plugin.getLogger().log(Level.WARNING, "Erro ao executar comando: " + command, e);
         }
     }
 
@@ -69,8 +78,8 @@ public class RewardManager {
             periodicRewardTask.cancel();
         }
 
-        int interval = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60) * 60 * 20;
-        if (interval <= 0) return null;
+        int intervalTicks = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60) * 60 * 20;
+        if (intervalTicks <= 0) return null;
 
         return Bukkit.getScheduler().runTaskTimer(plugin, () -> {
             MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
@@ -80,7 +89,7 @@ public class RewardManager {
                     executeRewardCommands("periodic", player);
                 }
             }
-        }, interval, interval);
+        }, intervalTicks, intervalTicks);
     }
 
     private void logDebug(String message) {

@@ -1,43 +1,52 @@
-# Sistema de mensagens
-prefix: "&8[&aMagnata&8] &7"
+# Estrutura de mensagens
+formats:
+  prefix: "&8[&6Magnata&8]&7 "
+  date: "dd/MM/yyyy HH:mm"
+  currency: "$%.2f"
 
-current_magnata:
-  - ""
-  - "&8=== &2Magnata Atual &8==="
-  - "&fJogador: &a%player%"
-  - "&fFortuna: &a$%balance%"
-  - "&fDesde: &a%date%"
-  - "&8===================="
-  - ""
+# Mensagens de comando
+commands:
+  magnata:
+    current:
+      header: "&8&m----------------&6 Magnata Atual &8&m----------------"
+      content:
+        - "&6Jogador: &f%player%"
+        - "&6Fortuna: &f%balance%"
+        - "&6Desde: &f%date%"
+      footer: "&8&m----------------------------------------"
+    
+    history:
+      header: "&8&m-------------&6 Histórico (Página %page%/%total%) &8&m-------------"
+      entry: "&8#%position% &6%player% &7- &f%balance% &7(&f%date%&7)"
+      footer: "&8&m----------------------------------------"
+      empty: "&eNenhum registro histórico encontrado."
+    
+    reload:
+      success: "&aConfigurações recarregadas com sucesso!"
+      failure: "&cFalha ao recarregar. Verifique os logs."
 
-broadcast_new_magnata:
-  - "&8"
-  - "&2&lNOVO MAGNATA!"
-  - "&fParabéns a &a%player% &8(&a$%balance%&8)"
-  - "&8"
+# Sistema de notificações
+notifications:
+  new_magnata:
+    - ""
+    - "&6&lNOVO MAGNATA!"
+    - "&fParabéns a &6%player% &7(&6%balance%&7)"
+    - "&7Anterior: &f%previous_player% &7(&f%previous_balance%&7)"
+    - ""
 
-history:
-  header:
-    - "&8=== &2Histórico de Magnatas &8==="
-    - "&7Posição | Jogador | Fortuna | Data"
-    - "&8--------------------------------"
-  entry: "&f%position%. &a%player% &8- &a$%balance% &7(%date%)"
-  footer:
-    - "&8--------------------------------"
-    - "&fTotal: &a%total% magnatas"
-    - "&fUse &2/magnata &fpara ver o atual"
-
-help:
-  - "&8=== &2Ajuda do Magnata &8==="
-  - "&a/magnata &7- Mostra o magnata atual"
-  - "&a/magnata hist &7- Mostra o histórico"
-  - "&a/magnata reload &7- Recarrega o plugin"
-  - "&a/magnata help &7- Mostra esta ajuda"
-  - "&8======================"
-
+# Mensagens de erro
 errors:
-  no_permission: "&cVocê não tem permissão!"
-  economy_not_found: "&cSistema econômico não disponível"
-  player_not_found: "&cJogador não encontrado"
-  reload_success: "&aPlugin recarregado com sucesso!"
-  reload_failure: "&cErro ao recarregar o plugin. Verifique os logs."
+  no_permission: "&cVocê não tem permissão para isso!"
+  player_not_found: "&cJogador não encontrado!"
+  economy_error: "&cSistema econômico indisponível"
+  data_error: "&cErro ao processar dados"
+
+# Menu de ajuda
+help:
+  header: "&8&m----------------&6 Ajuda &8&m----------------"
+  content:
+    - "&6/magnata &f- Mostra o magnata atual"
+    - "&6/magnata history <página> &f- Histórico de magnatas"
+    - "&6/magnata reload &f- Recarrega o plugin"
+    - "&6/magnata help &f- Mostra esta ajuda"
+  footer: "&8&m----------------------------------------"

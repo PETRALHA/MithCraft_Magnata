@@ -1,37 +1,48 @@
 name: MithCraftMagnata
-version: 1.0.1
 main: com.mithcraft.magnata.MagnataPlugin
+version: 1.0.1
 api-version: "1.21"
 authors: [PETRALHA]
-description: Sistema de Magnata para servidores Minecraft
+description: Sistema de Magnata para servidores Minecraft Purpur 1.21
+
+# Configuração prioritária para Purpur
+libraries:
+  - com.destroystokyo.paper:paper-api:1.21-R0.1-SNAPSHOT
 
 commands:
   magnata:
-    description: Comandos do sistema Magnata
-    usage: |
-      /magnata - Mostra o magnata atual
-      /magnata help - Mostra esta ajuda
-      /magnata history - Mostra o histórico (aliases: hist, list)
-      /magnata reload - Recarrega o plugin
-    aliases: []
+    description: Comando principal do sistema Magnata
+    usage: /<command> [help|history|reload]
+    permission: magnata.command
+    permission-message: "&cVocê não tem permissão!"
+    aliases: [mg]
 
 permissions:
   magnata.command:
-    description: Acesso aos comandos básicos
+    description: Acesso ao comando base
     default: true
   magnata.help:
-    description: Permissão para ver a ajuda
+    description: Acesso à ajuda
     default: true
   magnata.history:
-    description: Permissão para ver o histórico
+    description: Ver histórico de magnatas
     default: true
   magnata.reload:
-    description: Permissão para recarregar o plugin
+    description: Recarregar o plugin
+    default: op
+  magnata.notify:
+    description: Receber notificações de mudanças
     default: op
   magnata.admin:
-    description: Todas as permissões do plugin
+    description: Acesso completo
     default: op
     children:
       magnata.*: true
 
-softdepend: [Vault, LuckPerms, PlaceholderAPI]
+depend: [Vault]
+softdepend: [LuckPerms, PlaceholderAPI]
+
+# Otimizações para Purpur
+settings:
+  async-command-initialization: true
+  permission-default-fallback: false
