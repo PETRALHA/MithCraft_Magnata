@@ -5,10 +5,6 @@ api-version: "1.21"
 authors: [PETRALHA]
 description: Sistema de Magnata para servidores Minecraft Purpur 1.21
 
-# Configuração prioritária para Purpur
-libraries:
-  - com.destroystokyo.paper:paper-api:1.21-R0.1-SNAPSHOT
-
 commands:
   magnata:
     description: Comando principal do sistema Magnata
@@ -41,8 +37,3 @@ permissions:
 
 depend: [Vault]
 softdepend: [LuckPerms, PlaceholderAPI]
-
-# Otimizações para Purpur
-settings:
-  async-command-initialization: true
-  permission-default-fallback: false

@@ -15,26 +15,29 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        
+        <!-- Versões das dependências -->
         <paper.version>1.21-R0.1-SNAPSHOT</paper.version>
         <vault.version>1.7.1</vault.version>
-        <luckperms.version>5.4</luckperms.version>
+        <luckperms.version>5.4.80</luckperms.version>
         <placeholderapi.version>2.11.6</placeholderapi.version>
-        <!-- Novas propriedades para Adventure API -->
         <adventure.version>4.14.0</adventure.version>
         <adventure.platform.version>4.3.0</adventure.platform.version>
+        <annotations.version>24.0.1</annotations.version>
     </properties>
 
     <repositories>
-        <!-- Repositório Principal -->
+        <!-- PaperMC -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         
-        <!-- PlaceholderAPI -->
+        <!-- PlaceholderAPI (Corrigido) -->
         <repository>
-            <id>placeholderapi-repo</id>
-            <url>https://repo.helpch.at/content/repositories/placeholderapi/</url>
+            <id>extendedclip-repo</id>
+            <url>https://repo.extendedclip.com/releases/</url>
         </repository>
         
         <!-- Vault -->
@@ -49,15 +52,9 @@
             <url>https://repo.lucko.me/</url>
         </repository>
         
-        <!-- Maven Central -->
+        <!-- Sonatype (Adventure) -->
         <repository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
-
-        <!-- Adventure API -->
-        <repository>
-            <id>sonatype-snapshots</id>
+            <id>sonatype</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
@@ -95,15 +92,15 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- Annotations para desenvolvimento -->
+        <!-- Annotations -->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>24.0.1</version>
+            <version>${annotations.version}</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- Adventure API (Novas dependências) -->
+        
+        <!-- Adventure API -->
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-api</artifactId>
@@ -131,13 +128,14 @@
     </dependencies>
 
     <build>
+        <finalName>${project.name}-${project.version}</finalName>
+        
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
                     <include>**/*.yml</include>
-                    <include>**/*.yaml</include>
                 </includes>
             </resource>
         </resources>
@@ -154,6 +152,7 @@
                     <compilerArgs>
                         <arg>-Xlint:unchecked</arg>
                         <arg>-Xlint:deprecation</arg>
+                        <arg>-parameters</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -175,12 +174,18 @@
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/**</exclude>
+                                        <exclude>LICENSE</exclude>
+                                        <exclude>NOTICE</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>net.kyori</pattern>
+                                    <shadedPattern>com.mithcraft.magnata.libs.net.kyori</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
@@ -194,7 +199,6 @@
                 <configuration>
                     <nonFilteredFileExtensions>
                         <nonFilteredFileExtension>yml</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>yaml</nonFilteredFileExtension>
                     </nonFilteredFileExtensions>
                 </configuration>
             </plugin>
