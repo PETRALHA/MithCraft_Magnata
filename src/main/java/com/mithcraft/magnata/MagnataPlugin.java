@@ -37,21 +37,26 @@ public final class MagnataPlugin extends JavaPlugin {
         }
 
         try {
+            // 1. Carregar configurações
             if (!loadConfigurations()) {
                 shutdown("Falha ao carregar configurações");
                 return;
             }
 
+            // 2. Configurar dependências essenciais
             if (!setupEconomy()) {
                 shutdown("Economia (Vault) não encontrada");
                 return;
             }
-
+            
             setupLuckPerms();
             setupPlaceholderAPI();
+
+            // 3. Inicializar managers
             initializeManagers();
-            registerCommands();
-            startMagnataChecker();
+
+            // 4. Registrar comando principal (sem alias /mg)
+            registerMainCommand();
 
             getLogger().info("Plugin ativado com sucesso!");
 
@@ -72,7 +77,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    public boolean loadConfigurations() {
+    private boolean loadConfigurations() {
         try {
             // Configuração principal
             saveDefaultConfig();
@@ -97,7 +102,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    public boolean setupEconomy() {
+    private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
@@ -110,7 +115,7 @@ public final class MagnataPlugin extends JavaPlugin {
         return true;
     }
 
-    public void setupLuckPerms() {
+    private void setupLuckPerms() {
         RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             luckPerms = provider.getProvider();
@@ -131,9 +136,18 @@ public final class MagnataPlugin extends JavaPlugin {
         this.rewardManager = new RewardManager(this);
     }
 
-    private void registerCommands() {
-        Objects.requireNonNull(getCommand("magnata")).setExecutor(new MagnataCommand(this));
-        Objects.requireNonNull(getCommand("mg")).setExecutor(new MagnataCommand(this));
+    private void registerMainCommand() {
+        try {
+            // Registrar apenas o comando principal sem alias
+            Objects.requireNonNull(getCommand("magnata"), "Comando 'magnata' não encontrado no plugin.yml")
+                .setExecutor(new MagnataCommand(this));
+            
+            // Os aliases dos subcomandos (help, history, etc) serão tratados
+            // dentro da classe MagnataCommand
+        } catch (Exception e) {
+            getLogger().log(Level.SEVERE, "Falha ao registrar comando principal:", e);
+            shutdown("Falha ao registrar comando principal");
+        }
     }
 
     private void startMagnataChecker() {
@@ -155,7 +169,6 @@ public final class MagnataPlugin extends JavaPlugin {
         String message = messages.getString(path, "&cMensagem não encontrada: " + path);
         String prefix = messages.getString("formats.prefix", "");
         
-        // Substitui {prefix} apenas se existir na mensagem
         if (message.contains("{prefix}")) {
             message = message.replace("{prefix}", prefix);
         }
