@@ -61,7 +61,7 @@ public final class MagnataPlugin extends JavaPlugin {
         ));
     }
 
-    private boolean loadConfigurations() {
+    protected boolean loadConfigurations() {
         try {
             // Configuração principal
             saveDefaultConfig();
@@ -92,7 +92,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private boolean setupEconomy() {
+    protected boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             getLogger().severe("Nenhum plugin de economia encontrado via Vault");
@@ -126,7 +126,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private void setupPlaceholderAPI() {
+    protected void setupPlaceholderAPI() {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new MagnataExpansion(this).register();
             placeholderApiEnabled = true;

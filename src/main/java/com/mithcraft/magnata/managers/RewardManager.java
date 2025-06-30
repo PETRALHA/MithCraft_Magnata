@@ -1,6 +1,7 @@
 package com.mithcraft.magnata.managers;
 
 import com.mithcraft.magnata.MagnataPlugin;
+import com.mithcraft.magnata.models.MagnataRecord;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -33,9 +34,8 @@ public class RewardManager {
     }
 
     private void logMagnataChange(OfflinePlayer newMagnata) {
-        MagnataRecord previous = !plugin.getHistoryManager().getHistory().isEmpty() 
-            ? plugin.getHistoryManager().getHistory().get(0) 
-            : null;
+        List<MagnataRecord> history = plugin.getHistoryManager().getHistory();
+        MagnataRecord previous = !history.isEmpty() ? history.get(0) : null;
 
         plugin.getLogger().info("Atualização de Magnata:\n" +
             "Novo: " + newMagnata.getName() + " (UUID: " + newMagnata.getUniqueId() + ")\n" +
@@ -78,7 +78,7 @@ public class RewardManager {
             periodicRewardTask.cancel();
         }
 
-        int intervalTicks = plugin.getConfig().getInt("rewards.periodic.interval_minutes", 60) * 60 * 20;
+        int intervalTicks = plugin.getConfig().getInt("rewards.periodic.interval", 60) * 60 * 20;
         if (intervalTicks <= 0) return null;
 
         return Bukkit.getScheduler().runTaskTimer(plugin, () -> {

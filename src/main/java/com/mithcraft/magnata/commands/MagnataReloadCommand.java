@@ -1,6 +1,7 @@
 package com.mithcraft.magnata.commands;
 
 import com.mithcraft.magnata.MagnataPlugin;
+import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
