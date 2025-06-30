@@ -7,7 +7,7 @@ description: Sistema de Magnata para servidores Minecraft Purpur 1.21
 
 commands:
   magnata:
-    description: Sistema de Magnata
+    description: Comando principal do sistema de Magnata
     usage: /magnata [help|history|reload]
     permission: magnata.command
     permission-message: "&cVocê não tem permissão!"
