@@ -23,7 +23,7 @@ public class HistoryManager {
     private final File historyFile;
 
     public HistoryManager(MagnataPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
         this.history = new ArrayList<>();
         this.topPlayersCache = new ArrayList<>();
         this.historyFile = new File(plugin.getDataFolder(), "history.yml");
@@ -96,18 +96,18 @@ public class HistoryManager {
     }
 
     private void giveRewardsAndNotify(OfflinePlayer player, double balance) {
-        // 1. Dar recompensas
         plugin.getRewardManager().giveBecomeMagnataRewards(player);
         
-        // 2. Preparar variáveis
+        String prefix = plugin.getMessages().getString("formats.prefix", "");
         String playerName = Objects.requireNonNull(player.getName());
         String balanceFormatted = plugin.formatCurrency(balance);
         String previousPlayer = history.isEmpty() ? "Ninguém" : history.get(0).getPlayerName();
         String previousBalance = history.isEmpty() ? plugin.formatCurrency(0) : plugin.formatCurrency(history.get(0).getBalance());
 
-        // 3. Enviar notificações formatadas
-        for (String rawMessage : plugin.getMessages().getStringList("notifications.new_magnata")) {
-            String message = plugin.formatMessage(rawMessage)
+        // Envia notificação formatada
+        for (String line : plugin.getMessages().getStringList("notifications.new_magnata")) {
+            String message = line
+                .replace("{prefix}", prefix)
                 .replace("{player}", playerName)
                 .replace("{balance}", balanceFormatted)
                 .replace("{previous_player}", previousPlayer)
@@ -190,7 +190,7 @@ public class HistoryManager {
         this.updateTopPlayersCache();
     }
 
-    // ===== Métodos de Ranking =====
+    // Métodos de ranking
     public String getPlayerAtPosition(int position) {
         if (position <= 0 || position > topPlayersCache.size()) return "N/A";
         OfflinePlayer player = topPlayersCache.get(position - 1);
@@ -202,32 +202,20 @@ public class HistoryManager {
         return plugin.getEconomy().getBalance(topPlayersCache.get(position - 1));
     }
 
-    public String getDateAtPosition(int position) {
-        // Implementação depende do seu sistema de datas
-        return "N/A";
-    }
-
     public String getFormattedTopLine(int position) {
         if (position <= 0 || position > topPlayersCache.size()) {
-            return plugin.formatMessage("ranking.position_empty")
-                .replace("%position%", String.valueOf(position));
+            return plugin.getMessages().getString("ranking.position_empty")
+                .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""))
+                .replace("{position}", String.valueOf(position));
         }
         
         OfflinePlayer player = topPlayersCache.get(position - 1);
         double balance = plugin.getEconomy().getBalance(player);
         
-        return plugin.formatMessage("ranking.top_line_format")
-            .replace("%position%", String.valueOf(position))
-            .replace("%player%", player.getName() != null ? player.getName() : "N/A")
-            .replace("%balance%", plugin.formatCurrency(balance));
-    }
-
-    public int getPlayerPosition(UUID playerUUID) {
-        for (int i = 0; i < topPlayersCache.size(); i++) {
-            if (topPlayersCache.get(i).getUniqueId().equals(playerUUID)) {
-                return i + 1;
-            }
-        }
-        return -1;
+        return plugin.getMessages().getString("ranking.top_line_format")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""))
+            .replace("{position}", String.valueOf(position))
+            .replace("{player}", player.getName() != null ? player.getName() : "N/A")
+            .replace("{balance}", plugin.formatCurrency(balance));
     }
 }

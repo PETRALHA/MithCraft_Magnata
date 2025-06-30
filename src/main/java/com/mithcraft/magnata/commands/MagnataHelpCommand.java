@@ -20,8 +20,7 @@ public class MagnataHelpCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        if (!sender.hasPermission(helpPermission)) {
-            sender.sendMessage(plugin.formatMessage("errors.no_permission"));
+        if (!hasPermission(sender)) {
             return true;
         }
 
@@ -29,44 +28,45 @@ public class MagnataHelpCommand implements CommandExecutor {
         return true;
     }
 
-    private void sendHelpMessages(CommandSender sender) {
-        // Envia cabeçalho
-        sendSection(sender, "help.header");
+    private boolean hasPermission(CommandSender sender) {
+        if (sender.hasPermission(helpPermission)) {
+            return true;
+        }
+        String noPermMessage = plugin.getMessages().getString("errors.no_permission")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
+        sender.sendMessage(noPermMessage);
+        return false;
+    }
 
+    private void sendHelpMessages(CommandSender sender) {
+        String prefix = plugin.getMessages().getString("formats.prefix", "");
+        
+        // Envia header
+        sendSection(sender, "help.header", prefix);
+        
         // Envia conteúdo
         List<String> helpLines = plugin.getMessages().getStringList("help.content");
         if (helpLines.isEmpty()) {
-            sender.sendMessage(plugin.formatMessage("help.empty"));
+            sendSection(sender, "help.empty", prefix);
         } else {
-            boolean filterByPermission = plugin.getConfig().getBoolean("settings.help_command.show_permission_restricted", false);
-            
-            helpLines.forEach(line -> {
-                if (!filterByPermission || hasRequiredPermission(sender, line)) {
-                    sender.sendMessage(plugin.formatMessage(line));
-                }
-            });
+            helpLines.forEach(line -> sender.sendMessage(line.replace("{prefix}", prefix)));
         }
-
-        // Envia rodapé
-        sendSection(sender, "help.footer");
-    }
-
-    private boolean hasRequiredPermission(CommandSender sender, String line) {
-        if (!line.contains("{permission}")) return true;
         
-        try {
-            String permission = line.split("\\{permission}")[1].split("\\}")[0].trim();
-            return permission.isEmpty() || sender.hasPermission(permission);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Formato de permissão inválido na linha de ajuda: " + line);
-            return true;
-        }
+        // Envia footer
+        sendSection(sender, "help.footer", prefix);
     }
 
-    private void sendSection(CommandSender sender, String path) {
-        String message = plugin.formatMessage(path);
-        if (!message.trim().isEmpty()) {
-            sender.sendMessage(message);
+    private void sendSection(CommandSender sender, String path, String prefix) {
+        if (plugin.getMessages().isList(path)) {
+            plugin.getMessages().getStringList(path).forEach(line -> 
+                sender.sendMessage(line.replace("{prefix}", prefix))
+            );
+        } else {
+            String message = plugin.getMessages().getString(path, "")
+                .replace("{prefix}", prefix);
+            if (!message.isEmpty()) {
+                sender.sendMessage(message);
+            }
         }
     }
 }

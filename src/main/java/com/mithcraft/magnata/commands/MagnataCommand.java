@@ -11,13 +11,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class MagnataCommand implements CommandExecutor, TabCompleter {
     private final MagnataPlugin plugin;
 
     public MagnataCommand(MagnataPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
     }
 
     @Override
@@ -30,98 +31,100 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
             case "help":
             case "ajuda":
             case "?":
-                if (!checkPermission(sender, "magnata.help")) return true;
-                return new MagnataHelpCommand(plugin).onCommand(sender, cmd, label, args);
+                return executeHelpCommand(sender);
                 
             case "history":
             case "hist":
             case "list":
-                if (!checkPermission(sender, "magnata.history")) return true;
-                return new MagnataHistoryCommand(plugin).onCommand(sender, cmd, label, args);
+                return executeHistoryCommand(sender);
                 
             case "reload":
-                if (!checkPermission(sender, "magnata.reload")) return true;
-                return handleReload(sender);
+                return executeReloadCommand(sender);
                 
             default:
-                if (!args[0].isEmpty()) {
-                    sender.sendMessage(plugin.formatMessage("errors.invalid_command"));
-                }
-                return showCurrentMagnata(sender);
+                return handleInvalidCommand(sender, args);
         }
     }
 
-    private boolean handleReload(CommandSender sender) {
+    private boolean executeHelpCommand(CommandSender sender) {
+        if (!checkPermission(sender, "magnata.help")) return true;
+        return new MagnataHelpCommand(plugin).onCommand(sender, null, null, null);
+    }
+
+    private boolean executeHistoryCommand(CommandSender sender) {
+        if (!checkPermission(sender, "magnata.history")) return true;
+        return new MagnataHistoryCommand(plugin).onCommand(sender, null, null, null);
+    }
+
+    private boolean executeReloadCommand(CommandSender sender) {
+        if (!checkPermission(sender, "magnata.reload")) return true;
+        
         try {
             plugin.reloadConfig();
             if (plugin.loadConfigurations() && plugin.setupEconomy()) {
-                sender.sendMessage(plugin.formatMessage("commands.magnata.reload.success"));
+                plugin.getHistoryManager().reload();
+                plugin.getRewardManager().reload();
+                sender.sendMessage(getMessage("commands.magnata.reload.success"));
                 return true;
             }
-            sender.sendMessage(plugin.formatMessage("commands.magnata.reload.failure"));
+            sender.sendMessage(getMessage("commands.magnata.reload.failure"));
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Erro ao recarregar:", e);
-            sender.sendMessage(plugin.formatMessage("commands.magnata.reload.failure"));
+            sender.sendMessage(getMessage("commands.magnata.reload.failure"));
         }
         return true;
+    }
+
+    private boolean handleInvalidCommand(CommandSender sender, String[] args) {
+        if (!args[0].isEmpty()) {
+            sender.sendMessage(getMessage("errors.invalid_command"));
+        }
+        return showCurrentMagnata(sender);
     }
 
     private boolean showCurrentMagnata(CommandSender sender) {
         if (!checkPermission(sender, "magnata.command")) return true;
 
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
+        String prefix = getPrefix();
         
         // Header
-        sender.sendMessage(plugin.formatMessage("commands.magnata.current.header"));
+        sender.sendMessage(getMessage("commands.magnata.current.header"));
         
-        // Conteúdo
+        // Content
         if (current == null) {
-            sender.sendMessage(plugin.formatMessage("commands.magnata.current.empty"));
+            sender.sendMessage(getMessage("commands.magnata.current.empty"));
         } else {
             List<String> contentLines = plugin.getMessages().getStringList("commands.magnata.current.content");
             for (String line : contentLines) {
-                String formatted = plugin.formatMessage(line)
+                sender.sendMessage(line
+                    .replace("{prefix}", prefix)
                     .replace("{player}", current.getPlayerName())
                     .replace("{balance}", plugin.formatCurrency(current.getBalance()))
-                    .replace("{date}", current.getFormattedDate());
-                sender.sendMessage(formatted);
+                    .replace("{date}", current.getFormattedDate()));
             }
         }
         
         // Footer
-        sender.sendMessage(plugin.formatMessage("commands.magnata.current.footer"));
+        sender.sendMessage(getMessage("commands.magnata.current.footer"));
         return true;
-    }
-
-    private void sendFormattedContent(CommandSender sender, MagnataRecord record) {
-        List<String> contentLines = plugin.getMessages().getStringList("commands.magnata.current.content");
-        if (contentLines.isEmpty()) {
-            sendFormattedMessage(sender, "commands.magnata.current.empty");
-            return;
-        }
-
-        contentLines.forEach(line -> {
-            String formatted = plugin.formatMessage(line)
-                .replace("%player%", record.getPlayerName())
-                .replace("%balance%", plugin.formatCurrency(record.getBalance()))
-                .replace("%date%", record.getFormattedDate());
-            sender.sendMessage(formatted);
-        });
-    }
-
-    private void sendFormattedMessage(CommandSender sender, String path) {
-        String message = plugin.formatMessage(path);
-        if (!message.isEmpty()) {
-            sender.sendMessage(message);
-        }
     }
 
     private boolean checkPermission(CommandSender sender, String permission) {
-        if (!sender.hasPermission(permission)) {
-            sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-            return false;
+        if (sender.hasPermission(permission)) {
+            return true;
         }
-        return true;
+        sender.sendMessage(getMessage("errors.no_permission"));
+        return false;
+    }
+
+    private String getMessage(String path) {
+        return plugin.getMessages().getString(path, "&cMensagem não configurada: " + path)
+            .replace("{prefix}", getPrefix());
+    }
+
+    private String getPrefix() {
+        return plugin.getMessages().getString("formats.prefix", "");
     }
 
     @Nullable

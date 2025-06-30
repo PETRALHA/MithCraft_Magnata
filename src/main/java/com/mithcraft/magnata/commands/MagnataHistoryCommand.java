@@ -35,8 +35,8 @@ public class MagnataHistoryCommand implements CommandExecutor {
             return true;
         }
 
-        int requestedPage = parseRequestedPage(args);
-        displayHistory(sender, history, requestedPage);
+        int requestedPage = parsePageNumber(args);
+        displayHistoryPage(sender, history, requestedPage);
         return true;
     }
 
@@ -44,11 +44,13 @@ public class MagnataHistoryCommand implements CommandExecutor {
         if (sender.hasPermission(permission)) {
             return true;
         }
-        sender.sendMessage(plugin.formatMessage("errors.no_permission"));
+        String noPermMessage = plugin.getMessages().getString("errors.no_permission")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
+        sender.sendMessage(noPermMessage);
         return false;
     }
 
-    private int parseRequestedPage(String[] args) {
+    private int parsePageNumber(String[] args) {
         if (args.length == 0) return 1;
         
         try {
@@ -58,9 +60,9 @@ public class MagnataHistoryCommand implements CommandExecutor {
         }
     }
 
-    private void displayHistory(CommandSender sender, List<MagnataRecord> history, int requestedPage) {
+    private void displayHistoryPage(CommandSender sender, List<MagnataRecord> history, int page) {
         int totalPages = calculateTotalPages(history.size());
-        int actualPage = Math.min(requestedPage, totalPages);
+        int actualPage = Math.min(page, totalPages);
         
         sendHeader(sender, actualPage, totalPages);
         sendEntries(sender, history, actualPage);
@@ -72,9 +74,10 @@ public class MagnataHistoryCommand implements CommandExecutor {
     }
 
     private void sendHeader(CommandSender sender, int page, int totalPages) {
-        String header = plugin.formatMessage("commands.magnata.history.header")
-            .replace("%page%", String.valueOf(page))
-            .replace("%total%", String.valueOf(totalPages));
+        String header = plugin.getMessages().getString("commands.magnata.history.header")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""))
+            .replace("{page}", String.valueOf(page))
+            .replace("{total}", String.valueOf(totalPages));
         sender.sendMessage(header);
     }
 
@@ -82,25 +85,29 @@ public class MagnataHistoryCommand implements CommandExecutor {
         int startIndex = (page - 1) * entriesPerPage;
         int endIndex = Math.min(startIndex + entriesPerPage, history.size());
         
+        String entryFormat = plugin.getMessages().getString("commands.magnata.history.entry")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
+
         for (int i = startIndex; i < endIndex; i++) {
             MagnataRecord record = history.get(i);
-            String entry = plugin.formatMessage("commands.magnata.history.entry")
-                .replace("%position%", String.valueOf(i + 1))
-                .replace("%player%", record.getPlayerName())
-                .replace("%balance%", plugin.formatCurrency(record.getBalance()))
-                .replace("%date%", record.getFormattedDate());
+            String entry = entryFormat
+                .replace("{position}", String.valueOf(i + 1))
+                .replace("{player}", record.getPlayerName())
+                .replace("{balance}", plugin.formatCurrency(record.getBalance()))
+                .replace("{date}", record.getFormattedDate());
             sender.sendMessage(entry);
         }
     }
 
     private void sendFooter(CommandSender sender, int page, int totalPages) {
-        String footer = plugin.formatMessage("commands.magnata.history.footer")
-            .replace("%page%", String.valueOf(page))
-            .replace("%total%", String.valueOf(totalPages));
+        String footer = plugin.getMessages().getString("commands.magnata.history.footer")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
         sender.sendMessage(footer);
     }
 
     private void sendEmptyMessage(CommandSender sender) {
-        sender.sendMessage(plugin.formatMessage("commands.magnata.history.empty"));
+        String emptyMessage = plugin.getMessages().getString("commands.magnata.history.empty")
+            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
+        sender.sendMessage(emptyMessage);
     }
 }
