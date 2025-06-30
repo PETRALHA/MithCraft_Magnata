@@ -11,47 +11,60 @@ import java.util.Objects;
 
 public class MagnataHelpCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
-    private final String permission;
 
     public MagnataHelpCommand(MagnataPlugin plugin) {
-        this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
-        this.permission = plugin.getConfig().getString("permissions.help", "magnata.help");
+        this.plugin = Objects.requireNonNull(plugin, "Plugin instance cannot be null");
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-        try {
-            if (!sender.hasPermission(permission)) {
-                sender.sendMessage(plugin.formatMessage(getMessage("errors.no_permission")));
-                return true;
-            }
+        // Check permission using config-defined permission node
+        String permissionNode = plugin.getConfig().getString("permissions.help", "magnata.help");
+        if (!sender.hasPermission(permissionNode)) {
+            sender.sendMessage(plugin.formatMessage("errors.no_permission"));
+            return true;
+        }
 
-            sendHelpMessages(sender);
-            return true;
-        } catch (Exception e) {
-            plugin.getLogger().severe("Erro ao executar comando help: " + e.getMessage());
-            sender.sendMessage(plugin.formatMessage(getMessage("errors.command_failed")));
-            return true;
+        sendFormattedHelp(sender);
+        return true;
+    }
+
+    private void sendFormattedHelp(CommandSender sender) {
+        // Send header
+        String header = plugin.formatMessage("help.header");
+        if (!header.isEmpty()) {
+            sender.sendMessage(header);
+        }
+
+        // Process help content
+        List<String> helpContent = plugin.getMessages().getStringList("help.content");
+        if (helpContent.isEmpty()) {
+            sender.sendMessage(plugin.formatMessage("help.empty"));
+        } else {
+            boolean filterByPermission = plugin.getConfig().getBoolean("settings.help_command.show_permission_restricted", false);
+            
+            helpContent.forEach(line -> {
+                if (shouldDisplayLine(sender, line, filterByPermission)) {
+                    sender.sendMessage(plugin.formatMessage(line));
+                }
+            });
+        }
+
+        // Send footer
+        String footer = plugin.formatMessage("help.footer");
+        if (!footer.isEmpty()) {
+            sender.sendMessage(footer);
         }
     }
 
-    private void sendHelpMessages(CommandSender sender) {
-        List<String> helpMessages = getMessageList("help");
-        if (helpMessages.isEmpty()) {
-            sender.sendMessage(plugin.formatMessage(getMessage("help.empty")));
-            return;
+    private boolean shouldDisplayLine(CommandSender sender, String line, boolean filterByPermission) {
+        if (!filterByPermission) return true;
+        
+        // Extract permission from placeholder {permission} in the line
+        if (line.contains("{permission}")) {
+            String permission = line.split("\\{permission}")[1].split("\\}")[0];
+            return sender.hasPermission(permission.trim());
         }
-
-        helpMessages.forEach(message -> 
-            sender.sendMessage(plugin.formatMessage(message))
-        );
-    }
-
-    private String getMessage(String path) {
-        return plugin.getMessages().getString(path, "&cMensagem não configurada: " + path);
-    }
-
-    private List<String> getMessageList(String path) {
-        return plugin.getMessages().getStringList(path);
+        return true;
     }
 }

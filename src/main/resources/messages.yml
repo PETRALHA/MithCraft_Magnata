@@ -12,6 +12,7 @@ formats:
 commands:
   magnata:
     current:
+      empty: "{prefix}&7Atualmente não há um magnata definido."
       header: "{prefix}&8&m----------------&6 Magnata Atual &8&m----------------"
       content:
         - "{prefix}&6Jogador: &f%player%"
@@ -44,6 +45,7 @@ errors:
   player_not_found: "{prefix}&cJogador não encontrado!"
   economy_error: "{prefix}&cSistema econômico indisponível"
   data_error: "{prefix}&cErro ao processar dados"
+  invalid_command: "{prefix}&cComando inválido. Use &6/magnata help &cpara ver os comandos disponíveis."
 
 # Menu de ajuda
 help:

@@ -10,8 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 public class MagnataCommand implements CommandExecutor, TabCompleter {
     private final MagnataPlugin plugin;
@@ -39,12 +39,24 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
                 
             case "reload":
                 if (!checkPermission(sender, "magnata.reload")) return true;
-                plugin.reloadConfig();
-                plugin.loadConfigurations();
-                sender.sendMessage(plugin.formatMessage("commands.magnata.reload.success"));
+                try {
+                    plugin.reloadConfig();
+                    if (plugin.loadConfigurations()) {
+                        plugin.setupEconomy();
+                        sender.sendMessage(plugin.formatMessage("commands.magnata.reload.success"));
+                    } else {
+                        sender.sendMessage(plugin.formatMessage("commands.magnata.reload.failure"));
+                    }
+                } catch (Exception e) {
+                    plugin.getLogger().log(Level.SEVERE, "Erro ao recarregar:", e);
+                    sender.sendMessage(plugin.formatMessage("commands.magnata.reload.failure"));
+                }
                 return true;
                 
             default:
+                if (!args[0].isEmpty()) {
+                    sender.sendMessage(plugin.formatMessage("errors.invalid_command"));
+                }
                 return showCurrentMagnata(sender);
         }
     }
@@ -53,19 +65,24 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
         if (!checkPermission(sender, "magnata.command")) return true;
 
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
+        
+        // Header
+        sender.sendMessage(plugin.formatMessage("commands.magnata.current.header"));
+        
+        // Conteúdo
         if (current == null) {
             sender.sendMessage(plugin.formatMessage("commands.magnata.current.empty"));
-            return true;
+        } else {
+            plugin.getMessages().getStringList("commands.magnata.current.content").forEach(line -> {
+                sender.sendMessage(plugin.formatMessage(line)
+                    .replace("%player%", current.getPlayerName())
+                    .replace("%balance%", plugin.formatCurrency(current.getBalance()))
+                    .replace("%date%", current.getFormattedDate()));
+            });
         }
-
-        // Envia todas as mensagens formatadas
-        plugin.getMessages().getStringList("commands.magnata.current.content").forEach(line -> {
-            sender.sendMessage(plugin.formatMessage(line)
-                .replace("%player%", current.getPlayerName())
-                .replace("%balance%", plugin.formatCurrency(current.getBalance()))
-                .replace("%date%", current.getFormattedDate()));
-        });
         
+        // Footer
+        sender.sendMessage(plugin.formatMessage("commands.magnata.current.footer"));
         return true;
     }
 

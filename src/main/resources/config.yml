@@ -4,6 +4,8 @@ settings:
   check_interval: 300  # Intervalo em segundos para verificar novo magnata (padrão: 5 minutos)
   max_history_size: 10  # Quantidade máxima de registros no histórico
   debug: false  # Habilita logs detalhados para desenvolvimento
+  help_command:
+    show_permission_restricted: false  # Se true, só mostra comandos que o jogador tem permissão
 
   # Configurações de exibição
   use_action_bar: true  # Mostra notificações na action bar
