@@ -1,7 +1,7 @@
 package com.mithcraft.magnata.commands;
 
 import com.mithcraft.magnata.MagnataPlugin;
-import com.mithcraft.magnata.models.MagnataRecord; // Import adicionado
+import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,9 +9,15 @@ import org.jetbrains.annotations.NotNull;
 
 public class MagnataCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
+    private final MagnataHelpCommand helpCommand;
+    private final MagnataHistoryCommand historyCommand;
+    private final MagnataReloadCommand reloadCommand;
 
     public MagnataCommand(MagnataPlugin plugin) {
         this.plugin = plugin;
+        this.helpCommand = new MagnataHelpCommand(plugin);
+        this.historyCommand = new MagnataHistoryCommand(plugin);
+        this.reloadCommand = new MagnataReloadCommand(plugin);
     }
 
     @Override
@@ -20,32 +26,47 @@ public class MagnataCommand implements CommandExecutor {
             return showCurrentMagnata(sender);
         }
 
-        switch (args[0].toLowerCase()) {
+        String subCommand = args[0].toLowerCase();
+        String permission = getPermissionForSubCommand(subCommand);
+
+        if (!sender.hasPermission(permission)) {
+            sender.sendMessage(plugin.formatMessage("errors.no_permission"));
+            return true;
+        }
+
+        return executeSubCommand(subCommand, sender, cmd, label, args);
+    }
+
+    private boolean executeSubCommand(String subCommand, CommandSender sender, Command cmd, String label, String[] args) {
+        switch (subCommand) {
             case "help":
-                if (!sender.hasPermission(plugin.getConfig().getString("permissions.help", "magnata.help"))) {
-                    sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-                    return true;
-                }
-                return new MagnataHelpCommand(plugin).onCommand(sender, cmd, label, args);
+                return helpCommand.onCommand(sender, cmd, label, args);
                 
             case "hist":
             case "list":
             case "history":
-                if (!sender.hasPermission(plugin.getConfig().getString("permissions.history", "magnata.history"))) {
-                    sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-                    return true;
-                }
-                return new MagnataHistoryCommand(plugin).onCommand(sender, cmd, label, args);
+                return historyCommand.onCommand(sender, cmd, label, args);
                 
             case "reload":
-                if (!sender.hasPermission(plugin.getConfig().getString("permissions.reload", "magnata.reload"))) {
-                    sender.sendMessage(plugin.formatMessage("errors.no_permission"));
-                    return true;
-                }
-                return new MagnataReloadCommand(plugin).onCommand(sender, cmd, label, args);
+                return reloadCommand.onCommand(sender, cmd, label, args);
                 
             default:
                 return showCurrentMagnata(sender);
+        }
+    }
+
+    private String getPermissionForSubCommand(String subCommand) {
+        switch (subCommand) {
+            case "help":
+                return plugin.getConfig().getString("permissions.help", "magnata.help");
+            case "hist":
+            case "list":
+            case "history":
+                return plugin.getConfig().getString("permissions.history", "magnata.history");
+            case "reload":
+                return plugin.getConfig().getString("permissions.reload", "magnata.reload");
+            default:
+                return plugin.getConfig().getString("permissions.base", "magnata.command");
         }
     }
 
