@@ -31,7 +31,6 @@ rewards:
 integrations:
   placeholder_api: true  # Habilita integração com PlaceholderAPI
   luckperms: true  # Habilita integração com LuckPerms
-  vault: true  # Habilita integração com Vault/Economy
 
 # Configurações de comandos ()
 commands:
