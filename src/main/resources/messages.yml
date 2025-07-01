@@ -33,7 +33,7 @@ notifications:
     - ""
     - "{prefix}&a&lNOVO MAGNATA!"
     - "{prefix}&fParabéns a &a{player} &8(&a{balance}&8)"
-    - "{prefix}&fAnterior: &7{previous_player} &8(&f{previous_balance}&8)"
+    - "{prefix}&fAnterior: &7{previous_player} &8(&7{previous_balance}&8)"
     - ""
   no_previous_magnata: "{prefix}&7(Nenhum magnata anterior)"
 
