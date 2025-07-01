@@ -1,122 +1,143 @@
 <h1 align="center">
   <br>
-  <a href="http://www.MithCraft.com.br"><img src="https://i.imgur.com/VDfGLQQ.png" alt="Markdownify" width="200"></a>
-  <br>
-  Magnata
-  <br>
+  <a href="http://www.MithCraft.com.br"><img src="https://github.com/user-attachments/assets/056da34d-f79e-4101-a20e-febd537da3ac"
+ alt="Magnata" width="200"></a>
 </h1>
 
-<h4 align="center">A plugin that implements a tycoon system (Player with more money on the server) with configurable rewards. Made by <a href="http://www.MithCraft.com.br" target="_blank">MithCraft</a> Server.</h4>
+# 🏦 MithCraft Magnata - Sistema completo de Magnatas para Minecraft
 
-<p align="center">
-  <a href="https://badge.fury.io/js/electron-markdownify">
-    <img src="https://badge.fury.io/js/electron-markdownify.svg"
-         alt="Gitter">
-  </a>
-  <a href="https://gitter.im/amitmerchant1990/electron-markdownify"><img src="https://badges.gitter.im/amitmerchant1990/electron-markdownify.svg"></a>
-  <a href="https://saythanks.io/to/bullredeyes@gmail.com">
-      <img src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg">
-  </a>
-  <a href="https://www.paypal.me/AmitMerchant">
-    <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=flat">
-  </a>
-</p>
+![GitHub release](https://img.shields.io/github/v/release/PETRALHA/MithCraft_Magnata?style=for-the-badge)
+![GitHub license](https://img.shields.io/github/license/PETRALHA/MithCraft_Magnata?style=for-the-badge)
 
-<p align="center">
-  <a href="#key-features">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#download">Download</a> •
-  <a href="#credits">Credits</a> •
-  <a href="#related">Related</a> •
-  <a href="#license">License</a>
-</p>
+O plugin definitivo para economia em servidores Minecraft, identificando automaticamente o jogador mais rico e oferecendo um sistema completo de recompensas e reconhecimento.
 
-![screenshot](https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.gif)
+## ✨ Recursos Principais
 
-## Key Features
+- 🤑 **Identificação automática** do jogador mais rico (magnata)
+- 🎁 **Sistema de recompensas** totalmente configurável
+- 📜 **Histórico completo** com paginação
+- 💬 **Mensagens 100% personalizáveis** via messages.yml
+- 🔗 **Integrações nativas** com Vault, LuckPerms e PlaceholderAPI
+- 📊 **15+ placeholders** para uso em outros plugins
+- ⚡ **Otimizado** para servidores Purpur 1.21+
 
-* LivePreview - Make changes, See changes
-  - Instantly see what your Markdown documents look like in HTML as you create them.
-* Sync Scrolling
-  - While you type, LivePreview will automatically scroll to the current location you're editing.
-* GitHub Flavored Markdown  
-* Syntax highlighting
-* [KaTeX](https://khan.github.io/KaTeX/) Support
-* Dark/Light mode
-* Toolbar for basic Markdown formatting
-* Supports multiple cursors
-* Save the Markdown preview as PDF
-* Emoji support in preview :tada:
-* App will keep alive in tray for quick usage
-* Full screen mode
-  - Write distraction free.
-* Cross platform
-  - Windows, macOS and Linux ready.
+## 📥 Instalação
 
-## How To Use
+1. Baixe a versão mais recente na aba [Releases](https://github.com/PETRALHA/MithCraft_Magnata/releases)
+2. Coloque o arquivo `.jar` na pasta `plugins/`
+3. Reinicie o servidor
+4. Configure conforme necessário no arquivo `plugins/MithCraftMagnata/config.yml`
 
-To clone and run this application, you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
+## ⚙️ Configuração Básica
 
-```bash
-# Clone this repository
-$ git clone https://github.com/amitmerchant1990/electron-markdownify
+```yaml
+# plugins/MithCraftMagnata/config.yml
+settings:
+  check_interval: 300 # Verificação a cada 5 minutos
 
-# Go into the repository
-$ cd electron-markdownify
-
-# Install dependencies
-$ npm install
-
-# Run the app
-$ npm start
+rewards:
+  on_become:
+    - "eco give %player% 100"  # Concede $100
+    - "lp user %player% parent add magnata"  # Adiciona grupo magnata
+    - "lp user %magnata_previous_player% parent remove magnata"  # Remove do magnata anterior
+  
+  periodic:
+    interval: 60 # Recompensas a cada 1 hora
+    commands:
+      - "eco give %player% 500"
 ```
 
-> **Note**
-> If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
+## 📌 Placeholders (PlaceholderAPI)
+
+### Básicos
+| Placeholder          | Descrição                     | Exemplo         |
+|----------------------|-------------------------------|-----------------|
+| `%magnata_name%`     | Nome do magnata atual         | `Steve`         |
+| `%magnata_balance%`  | Fortuna formatada             | `$1,000.00`     |
+
+### Ranking
+| Placeholder            | Descrição                     |
+|------------------------|-------------------------------|
+| `%magnata_position_1%` | Jogador na 1ª posição         |
+| `%magnata_top_3_line%` | Linha formatada do top 3      |
+
+[Ver lista completa de placeholders](#placeholders-completos)
+
+## 🎮 Comandos
+
+| Comando               | Descrição                     | Permissão          |
+|-----------------------|-------------------------------|--------------------|
+| `/magnata`            | Mostra o magnata atual        | `magnata.command`  |
+| `/magnata history [página]` | Ver histórico           | `magnata.history`  |
+| `/magnata reload`     | Recarregar configurações      | `magnata.reload`   |
+| `/magnata help`     | Mostra menu de Ajuda      | `magnata.help`   |
+
+**Aliases:** `/magnata ajuda`, `/magnata ?`, `/magnata hist`, `/magnata list`
+
+## 📚 Sistema de Permissões
+
+- `magnata.command` - Acesso ao comando base
+- `magnata.history` - Ver histórico
+- `magnata.reload` - Recarregar plugin
+- `magnata.notify` - Receber notificações
+- `magnata.help` - Ver ajuda
+- `magnata.admin` - Acesso completo
+
+## 🌟 Destaques
+
+✅ **Totalmente configurável** - Adapte cada mensagem e recompensa  
+✅ **Baixo impacto no servidor** - Verificações otimizadas  
+✅ **Suporte multi-economia** - Funciona com qualquer sistema via Vault  
+✅ **Documentação completa** - Fácil configuração  
+
+## 🖼️ Screenshots
+![2025-07-01](https://github.com/user-attachments/assets/985d49a2-038f-4830-a253-38fa465fa0ed)
+![2025-07-01_20 43 59](https://github.com/user-attachments/assets/29ee9b5e-91d1-478c-b759-14a18ba859e0)
+![2025-07-01_20 43 33](https://github.com/user-attachments/assets/75409490-efba-48d9-bec5-76e91156daaf)
 
 
-## Download
 
-You can [download](https://github.com/amitmerchant1990/electron-markdownify/releases/tag/v1.2.0) the latest installable version of Markdownify for Windows, macOS and Linux.
+## 📜 Changelog 1.0.0
 
-## Emailware
+- Versão estável inicial
+- Sistema completo de magnatas
+- Integração com PlaceholderAPI
+- Suporte a Purpur 1.21+
 
-Markdownify is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, if you liked using this app or it has helped you in any way, I'd like you send me an email at <bullredeyes@gmail.com> about anything you'd want to say about this software. I'd really appreciate it!
+## 🔗 Links Úteis
 
-## Credits
-
-This software uses the following open source packages:
-
-- [Electron](http://electron.atom.io/)
-- [Node.js](https://nodejs.org/)
-- [Marked - a markdown parser](https://github.com/chjj/marked)
-- [showdown](http://showdownjs.github.io/showdown/)
-- [CodeMirror](http://codemirror.net/)
-- Emojis are taken from [here](https://github.com/arvida/emoji-cheat-sheet.com)
-- [highlight.js](https://highlightjs.org/)
-
-## Related
-
-[Try Web version of Markdownify](https://notepad.js.org/markdown-editor/)
-
-## Support
-
-If you like this project and think it has helped in any way, consider buying me a coffee!
-
-<a href="https://buymeacoffee.com/amitmerchant" target="_blank"><img src="app/img/bmc-button.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
-
-## You may also like...
-
-- [Pomolectron](https://github.com/amitmerchant1990/pomolectron) - A pomodoro app
-- [Correo](https://github.com/amitmerchant1990/correo) - A menubar/taskbar Gmail App for Windows and macOS
-
-## License
-
-MIT
+- [Reportar Bug](https://github.com/PETRALHA/MithCraft_Magnata/issues)
+- [Solicitar Feature](https://github.com/PETRALHA/MithCraft_Magnata/discussions)
 
 ---
 
-> [amitmerchant.com](https://www.amitmerchant.com) &nbsp;&middot;&nbsp;
-> GitHub [@amitmerchant1990](https://github.com/amitmerchant1990) &nbsp;&middot;&nbsp;
-> Twitter [@amit_merchant](https://twitter.com/amit_merchant)
+<details>
+<summary><h2 id="placeholders-completos">📋 Placeholders Completos</h2></summary>
 
+### 🔹 Básicos
+| Placeholder              | Descrição                                  |
+|--------------------------|-------------------------------------------|
+| `%magnata_name%`         | Nome do magnata atual                     |
+| `%magnata_uuid%`      | UUID do magnata atual              |
+| `%magnata_balance%`      | Fortuna formatada do magnata              |
+| `%magnata_date%`      | Data que se tornou magnata              |
+| `%magnata_count%`      | Total de jogadores no histórico              |
+
+### 🔹 Histórico
+| Placeholder                  | Descrição                          |
+|------------------------------|-----------------------------------|
+| `%magnata_previous_name%`    | Nome do magnata anterior          |
+| `%magnata_previous_uuid%`    | UUID do magnata anterior          |
+| `%magnata_previous_balance%`    | Fortuna do magnata anterior          |
+| `%magnata_previous_date%`    | Data que foi magnata          |
+
+### 🔹 Ranking
+| Placeholder            | Descrição                     |
+|------------------------|-------------------------------|
+| `%magnata_position_X%` | Jogador na posição X          |
+| `%magnata_balance_X%` | Fortuna do jogador na posição X          |
+| `%magnata_date_X%` | Data que assumiu a posição X          |
+| `%magnata_top_X_line%` | Linha formatada do ranking    |
+
+</details>
+```
