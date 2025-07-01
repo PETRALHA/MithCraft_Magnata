@@ -1,74 +1,122 @@
-# MithCraft_Magnata
-## 📜 Licença
+<h1 align="center">
+  <br>
+  <a href="http://www.MithCraft.com.br"><img src="https://i.imgur.com/VDfGLQQ.png" alt="Markdownify" width="200"></a>
+  <br>
+  Magnata
+  <br>
+</h1>
 
-Este projeto está licenciado sob a **MIT License** - veja o arquivo [https://github.com/PETRALHA/MithCraft_Magnata/blob/main/LICENSE](LICENSE) para detalhes.
+<h4 align="center">A plugin that implements a tycoon system (Player with more money on the server) with configurable rewards. Made by <a href="http://www.MithCraft.com.br" target="_blank">MithCraft</a> Server.</h4>
 
-MithCraft Magnata - Plugin para Minecraft
-📝 Descrição
-O MithCraft Magnata é um plugin para servidores Minecraft (Spigot/Paper/Purpur) que adiciona um sistema automático de Magnata, identificando e premiando o jogador mais rico do servidor.
+<p align="center">
+  <a href="https://badge.fury.io/js/electron-markdownify">
+    <img src="https://badge.fury.io/js/electron-markdownify.svg"
+         alt="Gitter">
+  </a>
+  <a href="https://gitter.im/amitmerchant1990/electron-markdownify"><img src="https://badges.gitter.im/amitmerchant1990/electron-markdownify.svg"></a>
+  <a href="https://saythanks.io/to/bullredeyes@gmail.com">
+      <img src="https://img.shields.io/badge/SayThanks.io-%E2%98%BC-1EAEDB.svg">
+  </a>
+  <a href="https://www.paypal.me/AmitMerchant">
+    <img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&amp;style=flat">
+  </a>
+</p>
 
-Ele se integra com EssentialsX (para economia) e LuckPerms (para grupos e permissões), permitindo personalizar recompensas, mensagens e comandos conforme a necessidade do servidor.
+<p align="center">
+  <a href="#key-features">Key Features</a> •
+  <a href="#how-to-use">How To Use</a> •
+  <a href="#download">Download</a> •
+  <a href="#credits">Credits</a> •
+  <a href="#related">Related</a> •
+  <a href="#license">License</a>
+</p>
 
-🔧 Compatibilidade
-Versão do Minecraft	Suporte
-1.21 (Atual)	✅ Total
-1.20.x	✅ Testado
-1.19.x	⚠️ Possível
-1.18.x e abaixo	❌ Não testado
-Nota:
+![screenshot](https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.gif)
 
-Funciona em Spigot, Paper e Purpur (Bukkit API).
+## Key Features
 
-Depende do EssentialsX (para economia) e LuckPerms (para grupos).
+* LivePreview - Make changes, See changes
+  - Instantly see what your Markdown documents look like in HTML as you create them.
+* Sync Scrolling
+  - While you type, LivePreview will automatically scroll to the current location you're editing.
+* GitHub Flavored Markdown  
+* Syntax highlighting
+* [KaTeX](https://khan.github.io/KaTeX/) Support
+* Dark/Light mode
+* Toolbar for basic Markdown formatting
+* Supports multiple cursors
+* Save the Markdown preview as PDF
+* Emoji support in preview :tada:
+* App will keep alive in tray for quick usage
+* Full screen mode
+  - Write distraction free.
+* Cross platform
+  - Windows, macOS and Linux ready.
 
-Se o seu servidor não usa EssentialsX, o plugin não funcionará (a menos que use outro sistema de economia compatível com a Vault API).
+## How To Use
 
-🚀 Features
-✅ Sistema Automático de Magnata
+To clone and run this application, you'll need [Git](https://git-scm.com) and [Node.js](https://nodejs.org/en/download/) (which comes with [npm](http://npmjs.com)) installed on your computer. From your command line:
 
-Verifica periodicamente o jogador mais rico e atualiza o grupo no LuckPerms.
+```bash
+# Clone this repository
+$ git clone https://github.com/amitmerchant1990/electron-markdownify
 
-Permite configurar prefixos, permissões e recompensas para o Magnata.
+# Go into the repository
+$ cd electron-markdownify
 
-✅ Comandos Personalizáveis
+# Install dependencies
+$ npm install
 
-/magnata → Mostra o jogador mais rico do servidor e sua fortuna.
+# Run the app
+$ npm start
+```
 
-/magnata hist → Exibe o histórico de Magnatas anteriores.
+> **Note**
+> If you're using Linux Bash for Windows, [see this guide](https://www.howtogeek.com/261575/how-to-run-graphical-linux-desktop-applications-from-windows-10s-bash-shell/) or use `node` from the command prompt.
 
-Você pode alterar os comandos no config.yml!
 
-✅ Mensagens Customizáveis
+## Download
 
-Broadcast quando um novo Magnata é definido.
+You can [download](https://github.com/amitmerchant1990/electron-markdownify/releases/tag/v1.2.0) the latest installable version of Markdownify for Windows, macOS and Linux.
 
-Mensagens multi-linha no chat.
+## Emailware
 
-Tudo configurável no arquivo config.yml.
+Markdownify is an [emailware](https://en.wiktionary.org/wiki/emailware). Meaning, if you liked using this app or it has helped you in any way, I'd like you send me an email at <bullredeyes@gmail.com> about anything you'd want to say about this software. I'd really appreciate it!
 
-✅ Recompensas Automáticas
+## Credits
 
-Recompensas ao se tornar Magnata (itens, money, efeitos).
+This software uses the following open source packages:
 
-Recompensas periódicas (enquanto permanece Magnata).
+- [Electron](http://electron.atom.io/)
+- [Node.js](https://nodejs.org/)
+- [Marked - a markdown parser](https://github.com/chjj/marked)
+- [showdown](http://showdownjs.github.io/showdown/)
+- [CodeMirror](http://codemirror.net/)
+- Emojis are taken from [here](https://github.com/arvida/emoji-cheat-sheet.com)
+- [highlight.js](https://highlightjs.org/)
 
-✅ Histórico de Magnatas
+## Related
 
-Armazena os últimos Magnatas do servidor.
+[Try Web version of Markdownify](https://notepad.js.org/markdown-editor/)
 
-Mostra nome, data e fortuna de cada um.
+## Support
 
-⚙️ Dependências Obrigatórias
-Plugin	Versão Testada	Descrição
-EssentialsX	2.20+	Fornece o sistema de economia.
-LuckPerms	5.4+	Gerencia grupos e permissões.
-Se não tiver esses plugins, o MithCraft Magnata não funcionará!
+If you like this project and think it has helped in any way, consider buying me a coffee!
 
-📥 Download & Instalação
-Baixe a versão mais recente na página de Releases.
+<a href="https://buymeacoffee.com/amitmerchant" target="_blank"><img src="app/img/bmc-button.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-Coloque o .jar na pasta plugins/ do seu servidor.
+## You may also like...
 
-Reinicie o servidor para gerar o config.yml.
+- [Pomolectron](https://github.com/amitmerchant1990/pomolectron) - A pomodoro app
+- [Correo](https://github.com/amitmerchant1990/correo) - A menubar/taskbar Gmail App for Windows and macOS
 
-Edite o config.yml para personalizar mensagens, comandos e recompensas.
+## License
+
+MIT
+
+---
+
+> [amitmerchant.com](https://www.amitmerchant.com) &nbsp;&middot;&nbsp;
+> GitHub [@amitmerchant1990](https://github.com/amitmerchant1990) &nbsp;&middot;&nbsp;
+> Twitter [@amit_merchant](https://twitter.com/amit_merchant)
+

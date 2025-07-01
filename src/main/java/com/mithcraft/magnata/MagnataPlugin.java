@@ -4,7 +4,6 @@ import com.mithcraft.magnata.commands.*;
 import com.mithcraft.magnata.managers.*;
 import com.mithcraft.magnata.placeholders.MagnataExpansion;
 import net.milkbowl.vault.economy.Economy;
-import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,77 +15,55 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.logging.Level;
 
 public final class MagnataPlugin extends JavaPlugin {
     private HistoryManager historyManager;
     private RewardManager rewardManager;
     private Economy economy;
-    private LuckPerms luckPerms;
-    private FileConfiguration messages;
     private boolean placeholderApiEnabled = false;
+    private FileConfiguration messages;
 
     @Override
     public void onEnable() {
-        // Garante que a pasta do plugin existe
-        if (!getDataFolder().exists()) {
-            getDataFolder().mkdirs();
+        // 1. Load configurations
+        if (!loadConfigurations()) {
+            shutdown("Failed to load configurations");
+            return;
         }
 
-        try {
-            // 1. Carregar configurações
-            if (!loadConfigurations()) {
-                shutdown("Falha ao carregar configurações");
-                return;
-            }
-
-            // 2. Configurar dependências essenciais
-            if (!setupEconomy()) {
-                shutdown("Economia (Vault) não encontrada");
-                return;
-            }
-            
-            setupLuckPerms();
-            setupPlaceholderAPI();
-
-            // 3. Inicializar managers
-            initializeManagers();
-
-            // 4. Registrar comando principal
-            registerMainCommand();
-
-            // 5. Iniciar verificador de magnata
-            startMagnataChecker();
-
-            getLogger().info("Plugin ativado com sucesso!");
-
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Erro crítico na inicialização:", e);
-            shutdown("Erro na inicialização");
+        // 2. Setup required dependencies
+        if (!setupEconomy()) {
+            shutdown("Vault economy not found");
+            return;
         }
+
+        // 3. Initialize components
+        initializeManagers();
+        registerCommands();
+        setupOptionalIntegrations();
+
+        // 4. Start background tasks
+        startMagnataChecker();
+
+        getLogger().info("Plugin activated successfully!");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("Desativando plugin...");
-        if (placeholderApiEnabled) {
-            new MagnataExpansion(this).unregister();
-        }
         if (rewardManager != null) {
             rewardManager.shutdown();
         }
+        getLogger().info("Plugin disabled");
     }
 
-    public boolean loadConfigurations() {
+    private boolean loadConfigurations() {
         try {
-            // Configuração principal
+            // Main config
             saveDefaultConfig();
             reloadConfig();
 
-            // Arquivo de mensagens
+            // Messages
             File messagesFile = new File(getDataFolder(), "messages.yml");
             if (!messagesFile.exists()) {
                 try (InputStream in = getResource("messages.yml")) {
@@ -100,38 +77,19 @@ public final class MagnataPlugin extends JavaPlugin {
             messages = YamlConfiguration.loadConfiguration(messagesFile);
             return true;
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Erro ao carregar configurações:", e);
+            getLogger().log(Level.SEVERE, "Configuration loading error:", e);
             return false;
         }
     }
 
-    public boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
+    private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
         }
         economy = rsp.getProvider();
-        getLogger().info("Economia conectada: " + economy.getName());
+        getLogger().info("Economy connected: " + economy.getName());
         return true;
-    }
-
-    private void setupLuckPerms() {
-        RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
-            luckPerms = provider.getProvider();
-            getLogger().info("LuckPerms conectado com sucesso");
-        }
-    }
-
-    public void setupPlaceholderAPI() {
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new MagnataExpansion(this).register();
-            placeholderApiEnabled = true;
-            getLogger().info("PlaceholderAPI registrado com sucesso");
-        }
     }
 
     private void initializeManagers() {
@@ -139,17 +97,21 @@ public final class MagnataPlugin extends JavaPlugin {
         this.rewardManager = new RewardManager(this);
     }
 
-    private void registerMainCommand() {
-        try {
-            Objects.requireNonNull(getCommand("magnata")).setExecutor(new MagnataCommand(this));
-        } catch (Exception e) {
-            getLogger().log(Level.SEVERE, "Falha ao registrar comando principal:", e);
-            shutdown("Falha ao registrar comando principal");
+    private void registerCommands() {
+        getCommand("magnata").setExecutor(new MagnataCommand(this));
+    }
+
+    private void setupOptionalIntegrations() {
+        // PlaceholderAPI
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new MagnataExpansion(this).register();
+            placeholderApiEnabled = true;
+            getLogger().info("PlaceholderAPI integration enabled");
         }
     }
 
     private void startMagnataChecker() {
-        int interval = getConfig().getInt("settings.check_interval_seconds", 300) * 20;
+        int interval = getConfig().getInt("settings.check_interval", 300) * 20;
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (economy != null) {
                 historyManager.checkForNewMagnata();
@@ -162,38 +124,23 @@ public final class MagnataPlugin extends JavaPlugin {
         getServer().getPluginManager().disablePlugin(this);
     }
 
-    // ===== UTILITÁRIOS =====
+    // ===== Utility Methods =====
     public String colorize(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
-    }
-
-    public String formatMessage(String path) {
-        String message = messages.getString(path, "&cMensagem não encontrada: " + path);
-        return colorize(message.replace("{prefix}", getPrefix()));
-    }
-
-    public String formatMessage(String path, Map<String, String> replacements) {
-        String message = formatMessage(path);
-        for (Map.Entry<String, String> entry : replacements.entrySet()) {
-            message = message.replace(entry.getKey(), entry.getValue());
-        }
-        return message;
-    }
-
-    public String formatCurrency(double amount) {
-        return economy != null ? economy.format(amount) : String.format("$%,.2f", amount);
     }
 
     public String getPrefix() {
         return colorize(messages.getString("formats.prefix", ""));
     }
 
-    // ===== GETTERS =====
+    public String formatCurrency(double amount) {
+        return economy != null ? economy.format(amount) : String.format("$%,.2f", amount);
+    }
+
+    // ===== Getters =====
     public HistoryManager getHistoryManager() { return historyManager; }
     public RewardManager getRewardManager() { return rewardManager; }
     public Economy getEconomy() { return economy; }
-    public LuckPerms getLuckPerms() { return luckPerms; }
     public FileConfiguration getMessages() { return messages; }
-    public FileConfiguration getMainConfig() { return getConfig(); }
     public boolean isPlaceholderApiEnabled() { return placeholderApiEnabled; }
 }

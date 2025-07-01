@@ -11,17 +11,17 @@ commands:
   magnata:
     current:
       empty: "{prefix}&7Atualmente não há um magnata definido."
-      header: "{prefix}&8&m----------------&6 Magnata Atual &8&m----------------"
+      header: "{prefix}&8&m-----------&6 Magnata Atual &8&m-----------"
       content:
         - "{prefix}&6Jogador: &f{player}"
         - "{prefix}&6Fortuna: &f{balance}"
         - "{prefix}&6Desde: &f{date}"
-      footer: "{prefix}&8&m----------------------------------------"
+      footer: "{prefix}&8&m-----------------------------------"
     
     history:
-      header: "{prefix}&8&m-------------&6 Histórico (Página {page}/{total}) &8&m-------------"
+      header: "{prefix}&8&m--------&6 Histórico (Página {page}/{total}) &8&m--------"
       entry: "{prefix}&8#{position} &6{player} &7- &f{balance} &7(&f{date}&7)"
-      footer: "{prefix}&8&m----------------------------------------"
+      footer: "{prefix}&8&m------------------------------------"
       empty: "{prefix}&eNenhum registro histórico encontrado."
     
     reload:
@@ -46,13 +46,13 @@ errors:
   command_failed: "{prefix}&cFalha ao executar comando."
 
 help:
-  header: "{prefix}&8&m----------------&6 Ajuda &8&m----------------"
+  header: "{prefix}&8&m---------------&6 Ajuda &8&m---------------"
   content:
     - "{prefix}&6/magnata &f- Mostra o magnata atual"
     - "{prefix}&6/magnata history &f- Histórico de magnatas"
     - "{prefix}&6/magnata reload &f- Recarrega o plugin"
     - "{prefix}&6/magnata help &f- Mostra esta ajuda"
-  footer: "{prefix}&8&m----------------------------------------"
+  footer: "{prefix}&8&m-------------------------------------"
   empty: "{prefix}&cNenhum comando de ajuda disponível."
 
 ranking:

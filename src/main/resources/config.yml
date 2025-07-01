@@ -5,11 +5,7 @@ settings:
   max_history_size: 10  # Quantidade máxima de registros no histórico
   debug: false  # Habilita logs detalhados para desenvolvimento
   help_command:
-    show_permission_restricted: false  # Se true, só mostra comandos que o jogador tem permissão
-
-  # Configurações de exibição
-  use_action_bar: true  # Mostra notificações na action bar
-  use_broadcast: true  # Envia anúncios globais para o servidor
+    show_permission_restricted: true  # Se true, só mostra comandos que o jogador tem permissão
 
   # Paginação do histórico
   pagination:

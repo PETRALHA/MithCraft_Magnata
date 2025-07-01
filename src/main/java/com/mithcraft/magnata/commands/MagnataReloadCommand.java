@@ -10,11 +10,10 @@ import java.util.Objects;
 
 public class MagnataReloadCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
-    private final String permission;
+    private static final String RELOAD_PERMISSION = "magnata.reload"; // Permissão hardcoded
 
     public MagnataReloadCommand(MagnataPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
-        this.permission = plugin.getConfig().getString("permissions.reload", "magnata.reload");
     }
 
     @Override
@@ -22,16 +21,15 @@ public class MagnataReloadCommand implements CommandExecutor {
         if (!hasPermission(sender)) {
             return true;
         }
-
         return executeReload(sender);
     }
 
     private boolean hasPermission(CommandSender sender) {
-        if (!sender.hasPermission(permission)) {
-            sendColoredMessage(sender, "errors.no_permission");
-            return false;
+        if (sender.hasPermission(RELOAD_PERMISSION)) {
+            return true;
         }
-        return true;
+        sendColoredMessage(sender, "errors.no_permission");
+        return false;
     }
 
     private boolean executeReload(CommandSender sender) {
@@ -54,11 +52,7 @@ public class MagnataReloadCommand implements CommandExecutor {
         plugin.getHistoryManager().reload();
         plugin.getRewardManager().reload();
 
-        // 3. Reconectar dependências
-        verifyDependencies();
-    }
-
-    private void verifyDependencies() {
+        // 3. Verificar dependências críticas
         if (!plugin.setupEconomy()) {
             throw new IllegalStateException("Falha ao reconectar com Vault/Economy");
         }
@@ -78,8 +72,7 @@ public class MagnataReloadCommand implements CommandExecutor {
         String message = plugin.getMessages().getString(messagePath, "");
         if (!message.isEmpty()) {
             sender.sendMessage(plugin.colorize(
-                message.replace("{prefix}", 
-                    plugin.getMessages().getString("formats.prefix", ""))
+                message.replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""))
             ));
         }
     }

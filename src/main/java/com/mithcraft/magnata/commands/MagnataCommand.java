@@ -16,6 +16,13 @@ import java.util.logging.Level;
 
 public class MagnataCommand implements CommandExecutor, TabCompleter {
     private final MagnataPlugin plugin;
+    
+    // Permissões hardcoded
+    private static final String PERMISSION_BASE = "magnata.command";
+    private static final String PERMISSION_HELP = "magnata.help";
+    private static final String PERMISSION_HISTORY = "magnata.history";
+    private static final String PERMISSION_RELOAD = "magnata.reload";
+    private static final String PERMISSION_NOTIFY = "magnata.notify";
 
     public MagnataCommand(MagnataPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
@@ -47,32 +54,31 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean executeHelpCommand(CommandSender sender) {
-        if (!checkPermission(sender, "magnata.help")) return true;
+        if (!checkPermission(sender, PERMISSION_HELP)) return true;
         return new MagnataHelpCommand(plugin).onCommand(sender, null, null, null);
     }
 
     private boolean executeHistoryCommand(CommandSender sender) {
-        if (!checkPermission(sender, "magnata.history")) return true;
+        if (!checkPermission(sender, PERMISSION_HISTORY)) return true;
         return new MagnataHistoryCommand(plugin).onCommand(sender, null, null, null);
     }
 
     private boolean executeReloadCommand(CommandSender sender) {
-        if (!checkPermission(sender, "magnata.reload")) return true;
+        if (!checkPermission(sender, PERMISSION_RELOAD)) return true;
         
         try {
             plugin.reloadConfig();
-            if (plugin.loadConfigurations() && plugin.setupEconomy()) {
-                plugin.getHistoryManager().reload();
-                plugin.getRewardManager().reload();
-                sendColoredMessage(sender, "commands.magnata.reload.success");
-                return true;
-            }
-            sendColoredMessage(sender, "commands.magnata.reload.failure");
+            plugin.loadConfigurations();
+            plugin.setupEconomy();
+            plugin.getHistoryManager().reload();
+            plugin.getRewardManager().reload();
+            sendColoredMessage(sender, "commands.magnata.reload.success");
+            return true;
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Erro ao recarregar:", e);
             sendColoredMessage(sender, "commands.magnata.reload.failure");
+            return false;
         }
-        return true;
     }
 
     private boolean handleInvalidCommand(CommandSender sender) {
@@ -81,15 +87,13 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean showCurrentMagnata(CommandSender sender) {
-        if (!checkPermission(sender, "magnata.command")) return true;
+        if (!checkPermission(sender, PERMISSION_BASE)) return true;
 
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
         String prefix = getFormattedPrefix();
         
-        // Header
         sendColoredMessage(sender, "commands.magnata.current.header");
         
-        // Content
         if (current == null) {
             sendColoredMessage(sender, "commands.magnata.current.empty");
         } else {
@@ -104,7 +108,6 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
             }
         }
         
-        // Footer
         sendColoredMessage(sender, "commands.magnata.current.footer");
         return true;
     }
@@ -135,9 +138,9 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
             List<String> completions = new ArrayList<>();
-            if (sender.hasPermission("magnata.help")) completions.add("help");
-            if (sender.hasPermission("magnata.history")) completions.add("history");
-            if (sender.hasPermission("magnata.reload")) completions.add("reload");
+            if (sender.hasPermission(PERMISSION_HELP)) completions.add("help");
+            if (sender.hasPermission(PERMISSION_HISTORY)) completions.add("history");
+            if (sender.hasPermission(PERMISSION_RELOAD)) completions.add("reload");
             return completions;
         }
         return new ArrayList<>();
