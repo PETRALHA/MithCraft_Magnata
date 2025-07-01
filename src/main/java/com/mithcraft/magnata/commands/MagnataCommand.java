@@ -99,7 +99,7 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
                     .replace("{prefix}", prefix)
                     .replace("{player}", current.getPlayerName())
                     .replace("{balance}", plugin.formatCurrency(current.getBalance()))
-                    .replace("{date}", current.getFormattedDate());
+                    .replace("{date}", current.getFormattedDate()));
                 sender.sendMessage(formatted);
             }
         }
