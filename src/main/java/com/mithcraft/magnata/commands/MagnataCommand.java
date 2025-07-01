@@ -42,7 +42,7 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
                 return executeReloadCommand(sender);
                 
             default:
-                return handleInvalidCommand(sender, args);
+                return handleInvalidCommand(sender);
         }
     }
 
@@ -64,50 +64,48 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
             if (plugin.loadConfigurations() && plugin.setupEconomy()) {
                 plugin.getHistoryManager().reload();
                 plugin.getRewardManager().reload();
-                sender.sendMessage(getMessage("commands.magnata.reload.success"));
+                sendColoredMessage(sender, "commands.magnata.reload.success");
                 return true;
             }
-            sender.sendMessage(getMessage("commands.magnata.reload.failure"));
+            sendColoredMessage(sender, "commands.magnata.reload.failure");
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Erro ao recarregar:", e);
-            sender.sendMessage(getMessage("commands.magnata.reload.failure"));
+            sendColoredMessage(sender, "commands.magnata.reload.failure");
         }
         return true;
     }
 
-    private boolean handleInvalidCommand(CommandSender sender, String[] args) {
-        if (!args[0].isEmpty()) {
-            sender.sendMessage(getMessage("errors.invalid_command"));
-        }
-        return showCurrentMagnata(sender);
+    private boolean handleInvalidCommand(CommandSender sender) {
+        sendColoredMessage(sender, "errors.invalid_command");
+        return true;
     }
 
     private boolean showCurrentMagnata(CommandSender sender) {
         if (!checkPermission(sender, "magnata.command")) return true;
 
         MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-        String prefix = plugin.colorize(plugin.getMessages().getString("formats.prefix", ""));
+        String prefix = getFormattedPrefix();
         
         // Header
-        sender.sendMessage(plugin.colorize(getMessage("commands.magnata.current.header")));
+        sendColoredMessage(sender, "commands.magnata.current.header");
         
         // Content
         if (current == null) {
-            sender.sendMessage(plugin.colorize(getMessage("commands.magnata.current.empty")));
+            sendColoredMessage(sender, "commands.magnata.current.empty");
         } else {
             List<String> contentLines = plugin.getMessages().getStringList("commands.magnata.current.content");
-            contentLines.forEach(line -> {
+            for (String line : contentLines) {
                 String formatted = plugin.colorize(line
                     .replace("{prefix}", prefix)
                     .replace("{player}", current.getPlayerName())
                     .replace("{balance}", plugin.formatCurrency(current.getBalance()))
-                    .replace("{date}", current.getFormattedDate()));
+                    .replace("{date}", current.getFormattedDate());
                 sender.sendMessage(formatted);
-            });
+            }
         }
         
         // Footer
-        sender.sendMessage(plugin.colorize(getMessage("commands.magnata.current.footer")));
+        sendColoredMessage(sender, "commands.magnata.current.footer");
         return true;
     }
 
@@ -115,17 +113,21 @@ public class MagnataCommand implements CommandExecutor, TabCompleter {
         if (sender.hasPermission(permission)) {
             return true;
         }
-        sender.sendMessage(getMessage("errors.no_permission"));
+        sendColoredMessage(sender, "errors.no_permission");
         return false;
     }
 
-    private String getMessage(String path) {
-        return plugin.getMessages().getString(path, "&cMensagem não configurada: " + path)
-            .replace("{prefix}", getPrefix());
+    private void sendColoredMessage(CommandSender sender, String messagePath) {
+        String message = plugin.getMessages().getString(messagePath, "");
+        if (!message.isEmpty()) {
+            sender.sendMessage(plugin.colorize(
+                message.replace("{prefix}", getFormattedPrefix())
+            ));
+        }
     }
 
-    private String getPrefix() {
-        return plugin.getMessages().getString("formats.prefix", "");
+    private String getFormattedPrefix() {
+        return plugin.colorize(plugin.getMessages().getString("formats.prefix", ""));
     }
 
     @Nullable

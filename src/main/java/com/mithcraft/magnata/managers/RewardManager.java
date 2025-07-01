@@ -26,25 +26,25 @@ public class RewardManager {
     public void giveBecomeMagnataRewards(OfflinePlayer newMagnata) {
         Objects.requireNonNull(newMagnata, "Jogador não pode ser nulo");
         
-        // Log detalhado antes de executar
-        logMagnataChange(newMagnata);
+        MagnataRecord previousRecord = getPreviousMagnataRecord();
+        String previousPlayerName = previousRecord != null ? previousRecord.getPlayerName() : null;
         
-        // 1. Executar recompensas padrão
-        executeRewardCommands("on_become", newMagnata);
+        logMagnataChange(newMagnata, previousPlayerName);
+        executeRewardCommands("on_become", newMagnata, previousPlayerName);
     }
 
-    private void logMagnataChange(OfflinePlayer newMagnata) {
+    private MagnataRecord getPreviousMagnataRecord() {
         List<MagnataRecord> history = plugin.getHistoryManager().getHistory();
-        MagnataRecord previous = !history.isEmpty() ? history.get(0) : null;
+        return history.size() > 1 ? history.get(1) : null;
+    }
 
+    private void logMagnataChange(OfflinePlayer newMagnata, String previousPlayerName) {
         plugin.getLogger().info("Atualização de Magnata:\n" +
             "Novo: " + newMagnata.getName() + " (UUID: " + newMagnata.getUniqueId() + ")\n" +
-            "Anterior: " + (previous != null 
-                ? previous.getPlayerName() + " (UUID: " + previous.getPlayerUUID() + ")" 
-                : "Nenhum"));
+            "Anterior: " + (previousPlayerName != null ? previousPlayerName : "Nenhum"));
     }
 
-    private void executeRewardCommands(String rewardType, OfflinePlayer player) {
+    private void executeRewardCommands(String rewardType, OfflinePlayer player, String previousPlayer) {
         List<String> commands = plugin.getConfig().getStringList("rewards." + rewardType);
         if (commands.isEmpty() || player.getName() == null) {
             logDebug("Nenhum comando de recompensa encontrado para: " + rewardType);
@@ -52,40 +52,68 @@ public class RewardManager {
         }
 
         commands.forEach(command -> {
-            String processedCommand = command
-                .replace("%player%", player.getName())
-                .replace("%uuid%", player.getUniqueId().toString());
+            String processedCommand = replaceAllPlaceholders(command, player, previousPlayer);
             executeRewardCommand(processedCommand);
         });
     }
 
+    private String replaceAllPlaceholders(String command, OfflinePlayer player, String previousPlayer) {
+        // Substituição de placeholders básicas
+        String result = command
+            .replace("%player%", player.getName())
+            .replace("%uuid%", player.getUniqueId().toString())
+            .replace("%magnata_player%", player.getName())
+            .replace("%magnata_previous_player%", previousPlayer != null ? previousPlayer : "");
+
+        // Adiciona suporte para placeholders dinâmicas do ranking
+        result = result.replace("%magnata_balance%", getCurrentBalanceFormatted(player))
+                      .replace("%magnata_date%", getCurrentDateFormatted());
+
+        // PlaceholderAPI (se habilitado)
+        if (plugin.isPlaceholderApiEnabled()) {
+            try {
+                result = PlaceholderAPI.setPlaceholders(player.getPlayer(), result);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Erro ao processar placeholders no comando: " + command, e);
+            }
+        }
+
+        logDebug("[Placeholders] Comando original: " + command);
+        logDebug("[Placeholders] Comando processado: " + result);
+        return result;
+    }
+
+    private String getCurrentBalanceFormatted(OfflinePlayer player) {
+        try {
+            return plugin.formatCurrency(plugin.getEconomy().getBalance(player));
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.WARNING, "Erro ao obter saldo do jogador", e);
+            return "0";
+        }
+    }
+
+    private String getCurrentDateFormatted() {
+        return plugin.getFormattedDate(System.currentTimeMillis());
+    }
+
     private void executeRewardCommand(String command) {
         try {
-            String formatted = formatCommand(command);
-            logDebug("[Recompensa] Executando: " + formatted);
+            if (command == null || command.trim().isEmpty()) {
+                logDebug("Ignorando comando vazio");
+                return;
+            }
+
+            logDebug("[Recompensa] Executando: " + command);
             
             if (Bukkit.isPrimaryThread()) {
-                Bukkit.dispatchCommand(console, formatted);
+                Bukkit.dispatchCommand(console, command);
             } else {
                 Bukkit.getScheduler().callSyncMethod(plugin, () -> 
-                    Bukkit.dispatchCommand(console, formatted)
+                    Bukkit.dispatchCommand(console, command)
                 );
             }
         } catch (Exception e) {
             plugin.getLogger().log(Level.WARNING, "Erro ao executar comando: " + command, e);
-        }
-    }
-
-    private String formatCommand(String command) {
-        if (!plugin.isPlaceholderApiEnabled()) {
-            return command;
-        }
-        
-        try {
-            return PlaceholderAPI.setPlaceholders(null, command);
-        } catch (Exception e) {
-            plugin.getLogger().log(Level.WARNING, "Erro ao processar placeholders no comando: " + command, e);
-            return command;
         }
     }
 
@@ -113,7 +141,7 @@ public class RewardManager {
             OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
             if (player.hasPlayedBefore()) {
                 logDebug("Distribuindo recompensas periódicas para: " + current.getPlayerName());
-                executeRewardCommands("periodic.commands", player);
+                executeRewardCommands("periodic.commands", player, null);
             } else {
                 logDebug("Jogador " + current.getPlayerName() + " nunca jogou, ignorando recompensas");
             }

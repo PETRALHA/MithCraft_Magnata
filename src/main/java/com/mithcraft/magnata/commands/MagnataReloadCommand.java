@@ -1,7 +1,6 @@
 package com.mithcraft.magnata.commands;
 
 import com.mithcraft.magnata.MagnataPlugin;
-import com.mithcraft.magnata.models.MagnataRecord;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -29,7 +28,7 @@ public class MagnataReloadCommand implements CommandExecutor {
 
     private boolean hasPermission(CommandSender sender) {
         if (!sender.hasPermission(permission)) {
-            sender.sendMessage(plugin.formatMessage(getMessage("errors.no_permission")));
+            sendColoredMessage(sender, "errors.no_permission");
             return false;
         }
         return true;
@@ -38,7 +37,7 @@ public class MagnataReloadCommand implements CommandExecutor {
     private boolean executeReload(CommandSender sender) {
         try {
             reloadPluginComponents();
-            sender.sendMessage(plugin.formatMessage(getMessage("reload.success")));
+            sendColoredMessage(sender, "commands.magnata.reload.success");
             return true;
         } catch (Exception e) {
             handleReloadError(sender, e);
@@ -67,17 +66,22 @@ public class MagnataReloadCommand implements CommandExecutor {
     }
 
     private void handleReloadError(CommandSender sender, Exception e) {
-        String errorMessage = getMessage("reload.failure");
         plugin.getLogger().severe("Erro no reload: " + e.getMessage());
-        sender.sendMessage(plugin.formatMessage(errorMessage));
+        sendColoredMessage(sender, "commands.magnata.reload.failure");
 
         if (isDebugMode()) {
             e.printStackTrace();
         }
     }
 
-    private String getMessage(String path) {
-        return plugin.getMessages().getString(path, "&c" + path.replace(".", "_"));
+    private void sendColoredMessage(CommandSender sender, String messagePath) {
+        String message = plugin.getMessages().getString(messagePath, "");
+        if (!message.isEmpty()) {
+            sender.sendMessage(plugin.colorize(
+                message.replace("{prefix}", 
+                    plugin.getMessages().getString("formats.prefix", ""))
+            ));
+        }
     }
 
     private boolean isDebugMode() {
