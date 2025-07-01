@@ -22,7 +22,7 @@ rewards:
   on_become:
     - "eco give %player% 100"  # Concede $100
     - "lp user %player% parent add magnata"  # Adiciona grupo magnata
-    - "lp user {previous_player} parent remove magnata"  # Remove do magnata anterior
+    - "lp user %magnata_previous_player% parent remove magnata"  # Remove do magnata anterior
   
   # Recompensas periódicas enquanto permanece magnata
   periodic:

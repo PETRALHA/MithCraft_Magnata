@@ -35,7 +35,8 @@ public class MagnataHistoryCommand implements CommandExecutor {
             return true;
         }
 
-        int requestedPage = parsePageNumber(args);
+        // Corrigido: Passa args corretamente (pode ser null)
+        int requestedPage = parsePageNumber(args != null ? args : new String[0]);
         displayHistoryPage(sender, history, requestedPage);
         return true;
     }
@@ -51,10 +52,14 @@ public class MagnataHistoryCommand implements CommandExecutor {
     }
 
     private int parsePageNumber(String[] args) {
-        if (args.length == 0) return 1;
-        
+        // Corrigido: Verifica se args é vazio ou nulo
+        if (args == null || args.length == 0) {
+            return 1;
+        }
+
         try {
-            return Math.max(1, Math.min(Integer.parseInt(args[0]), maxPages));
+            int page = Integer.parseInt(args[0]);
+            return Math.max(1, Math.min(page, maxPages));
         } catch (NumberFormatException e) {
             return 1;
         }
@@ -100,38 +105,6 @@ public class MagnataHistoryCommand implements CommandExecutor {
 
     private int calculateTotalPages(int totalEntries) {
         return Math.max(1, (int) Math.ceil((double) totalEntries / entriesPerPage));
-    }
-
-    private void sendHeader(CommandSender sender, int page, int totalPages) {
-        String header = plugin.getMessages().getString("commands.magnata.history.header")
-            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""))
-            .replace("{page}", String.valueOf(page))
-            .replace("{total}", String.valueOf(totalPages));
-        sender.sendMessage(header);
-    }
-
-    private void sendEntries(CommandSender sender, List<MagnataRecord> history, int page) {
-        int startIndex = (page - 1) * entriesPerPage;
-        int endIndex = Math.min(startIndex + entriesPerPage, history.size());
-        
-        String entryFormat = plugin.getMessages().getString("commands.magnata.history.entry")
-            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
-
-        for (int i = startIndex; i < endIndex; i++) {
-            MagnataRecord record = history.get(i);
-            String entry = entryFormat
-                .replace("{position}", String.valueOf(i + 1))
-                .replace("{player}", record.getPlayerName())
-                .replace("{balance}", plugin.formatCurrency(record.getBalance()))
-                .replace("{date}", record.getFormattedDate());
-            sender.sendMessage(entry);
-        }
-    }
-
-    private void sendFooter(CommandSender sender, int page, int totalPages) {
-        String footer = plugin.getMessages().getString("commands.magnata.history.footer")
-            .replace("{prefix}", plugin.getMessages().getString("formats.prefix", ""));
-        sender.sendMessage(footer);
     }
 
     private void sendEmptyMessage(CommandSender sender) {
