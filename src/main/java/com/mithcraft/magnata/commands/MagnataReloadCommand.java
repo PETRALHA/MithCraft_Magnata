@@ -7,10 +7,11 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class MagnataReloadCommand implements CommandExecutor {
     private final MagnataPlugin plugin;
-    private static final String RELOAD_PERMISSION = "magnata.reload"; // Permissão hardcoded
+    private static final String RELOAD_PERMISSION = "magnata.reload";
 
     public MagnataReloadCommand(MagnataPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "Plugin não pode ser nulo");
@@ -52,7 +53,7 @@ public class MagnataReloadCommand implements CommandExecutor {
         plugin.getHistoryManager().reload();
         plugin.getRewardManager().reload();
 
-        // 3. Verificar dependências críticas
+        // 3. Reconectar dependências
         if (!plugin.setupEconomy()) {
             throw new IllegalStateException("Falha ao reconectar com Vault/Economy");
         }

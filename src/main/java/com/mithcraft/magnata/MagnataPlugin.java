@@ -41,7 +41,7 @@ public final class MagnataPlugin extends JavaPlugin {
         // 3. Initialize components
         initializeManagers();
         registerCommands();
-        setupOptionalIntegrations();
+        setupPlaceholderAPI();
 
         // 4. Start background tasks
         startMagnataChecker();
@@ -57,7 +57,7 @@ public final class MagnataPlugin extends JavaPlugin {
         getLogger().info("Plugin disabled");
     }
 
-    private boolean loadConfigurations() {
+    public boolean loadConfigurations() {
         try {
             // Main config
             saveDefaultConfig();
@@ -82,7 +82,7 @@ public final class MagnataPlugin extends JavaPlugin {
         }
     }
 
-    private boolean setupEconomy() {
+    public boolean setupEconomy() {
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
@@ -92,6 +92,14 @@ public final class MagnataPlugin extends JavaPlugin {
         return true;
     }
 
+    public void setupPlaceholderAPI() {
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new MagnataExpansion(this).register();
+            placeholderApiEnabled = true;
+            getLogger().info("PlaceholderAPI integration enabled");
+        }
+    }
+
     private void initializeManagers() {
         this.historyManager = new HistoryManager(this);
         this.rewardManager = new RewardManager(this);
@@ -99,15 +107,6 @@ public final class MagnataPlugin extends JavaPlugin {
 
     private void registerCommands() {
         getCommand("magnata").setExecutor(new MagnataCommand(this));
-    }
-
-    private void setupOptionalIntegrations() {
-        // PlaceholderAPI
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new MagnataExpansion(this).register();
-            placeholderApiEnabled = true;
-            getLogger().info("PlaceholderAPI integration enabled");
-        }
     }
 
     private void startMagnataChecker() {
