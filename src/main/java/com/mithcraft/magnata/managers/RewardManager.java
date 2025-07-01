@@ -8,6 +8,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -58,18 +60,14 @@ public class RewardManager {
     }
 
     private String replaceAllPlaceholders(String command, OfflinePlayer player, String previousPlayer) {
-        // Substituição de placeholders básicas
         String result = command
             .replace("%player%", player.getName())
             .replace("%uuid%", player.getUniqueId().toString())
             .replace("%magnata_player%", player.getName())
-            .replace("%magnata_previous_player%", previousPlayer != null ? previousPlayer : "");
+            .replace("%magnata_previous_player%", previousPlayer != null ? previousPlayer : "")
+            .replace("%magnata_balance%", getCurrentBalanceFormatted(player))
+            .replace("%magnata_date%", getCurrentDateFormatted());
 
-        // Adiciona suporte para placeholders dinâmicas do ranking
-        result = result.replace("%magnata_balance%", getCurrentBalanceFormatted(player))
-                      .replace("%magnata_date%", getCurrentDateFormatted());
-
-        // PlaceholderAPI (se habilitado)
         if (plugin.isPlaceholderApiEnabled()) {
             try {
                 result = PlaceholderAPI.setPlaceholders(player.getPlayer(), result);
@@ -93,7 +91,8 @@ public class RewardManager {
     }
 
     private String getCurrentDateFormatted() {
-        return plugin.getFormattedDate(System.currentTimeMillis());
+        return new SimpleDateFormat(plugin.getMessages().getString("formats.date", "dd/MM/yyyy HH:mm"))
+               .format(new Date());
     }
 
     private void executeRewardCommand(String command) {
