@@ -33,45 +33,16 @@ integrations:
   luckperms: true  # Habilita integração com LuckPerms
   vault: true  # Habilita integração com Vault/Economy
 
-# Permissões do plugin
-permissions:
-  base: magnata.command  # Permissão básica para usar /magnata
-  help: magnata.help  # Permissão para ver ajuda
-  history: magnata.history  # Permissão para ver histórico
-  reload: magnata.reload  # Permissão para recarregar
-  notify: magnata.notify  # Permissão para receber notificações
-  admin: magnata.admin  # Permissão administrativa completa
-
-# Configurações de comandos
+# Configurações de comandos ()
 commands:
   main: magnata  # Comando principal
   aliases: []  # Aliases do comando principal (ex: [mg, rico])
   
-  # Configurações de subcomandos
+  # Configurações de subcomandos (Apenas documentação, no momento não editável)
   sub_commands:
     help:
       aliases: [ajuda, ?]  # Aliases para /magnata help
     history:
-      aliases: [hist, list, historico]  # Aliases para /magnata history
+      aliases: [hist, list,]  # Aliases para /magnata history
     reload:
-      aliases: [recarregar]  # Aliases para /magnata reload
-
-# Configurações de placeholders (documentação)
-placeholders:
-  available:
-    - "%magnata_player%"           # Nome do magnata atual (1ª posição)
-    - "%magnata_balance%"          # Fortuna do magnata atual
-    - "%magnata_date%"             # Data que se tornou magnata
-    - "%magnata_previous_player%"  # Magnata anterior
-    
-    # Sistema de ranking dinâmico
-    - "%magnata_position_<X>%"     # Retorna jogador na posição X do ranking
-    - "%magnata_balance_<X>%"      # Retorna fortuna na posição X
-    - "%magnata_date_<X>%"         # Retorna data que assumiu a posição X
-    
-    # Placeholders úteis para mensagens
-    - "%magnata_top_<X>_line%"     # Retorna linha formatada: "1. Jogador - $1000"
-    - "%magnata_count%"            # Número total de jogadores no ranking
-
-# Exemplo de uso no messages.yml:
-#   top_line_format: "&e%position%. &6%player% &7- &a%balance%"
+      aliases: []  # Aliases para /magnata reload

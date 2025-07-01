@@ -3,7 +3,7 @@ settings:
   use_prefix: true
 
 formats:
-  prefix: "&8[&6Magnata&8]&7 "
+  prefix: "&8[&aMagnata&8]&7 "
   date: "dd/MM/yyyy HH:mm"
   currency: "$%.2f"
 
@@ -11,16 +11,16 @@ commands:
   magnata:
     current:
       empty: "{prefix}&7Atualmente não há um magnata definido."
-      header: "{prefix}&8&m-----------&6 Magnata Atual &8&m-----------"
+      header: "{prefix}&8&m-----------&a Magnata Atual &8&m-----------"
       content:
-        - "{prefix}&6Jogador: &f{player}"
-        - "{prefix}&6Fortuna: &f{balance}"
-        - "{prefix}&6Desde: &f{date}"
+        - "{prefix}&fJogador: &a{player}"
+        - "{prefix}&fFortuna: &a{balance}"
+        - "{prefix}&fDesde: &a{date}"
       footer: "{prefix}&8&m-----------------------------------"
     
     history:
-      header: "{prefix}&8&m--------&6 Histórico (Página {page}/{total}) &8&m--------"
-      entry: "{prefix}&8#{position} &6{player} &7- &f{balance} &7(&f{date}&7)"
+      header: "{prefix}&8&m--------&a Histórico (Página {page}/{total}) &8&m--------"
+      entry: "{prefix}&8#{position} &a{player} &7- &f{balance} &8(&7{date}&8)"
       footer: "{prefix}&8&m------------------------------------"
       empty: "{prefix}&eNenhum registro histórico encontrado."
     
@@ -31,9 +31,9 @@ commands:
 notifications:
   new_magnata:
     - ""
-    - "{prefix}&6&lNOVO MAGNATA!"
-    - "{prefix}&fParabéns a &6{player} &7(&6{balance}&7)"
-    - "{prefix}&7Anterior: &f{previous_player} &7(&f{previous_balance}&7)"
+    - "{prefix}&a&lNOVO MAGNATA!"
+    - "{prefix}&fParabéns a &a{player} &8(&a{balance}&8)"
+    - "{prefix}&fAnterior: &7{previous_player} &8(&f{previous_balance}&8)"
     - ""
   no_previous_magnata: "{prefix}&7(Nenhum magnata anterior)"
 
@@ -42,19 +42,19 @@ errors:
   player_not_found: "{prefix}&cJogador não encontrado!"
   economy_error: "{prefix}&cSistema econômico indisponível"
   data_error: "{prefix}&cErro ao processar dados"
-  invalid_command: "{prefix}&cComando inválido. Use &6/magnata help &cpara ajuda."
+  invalid_command: "{prefix}&cComando inválido. Use &a/magnata help &cpara ajuda."
   command_failed: "{prefix}&cFalha ao executar comando."
 
 help:
-  header: "{prefix}&8&m---------------&6 Ajuda &8&m---------------"
+  header: "{prefix}&8&m---------------&a Ajuda &8&m---------------"
   content:
-    - "{prefix}&6/magnata &f- Mostra o magnata atual"
-    - "{prefix}&6/magnata history &f- Histórico de magnatas"
-    - "{prefix}&6/magnata reload &f- Recarrega o plugin"
-    - "{prefix}&6/magnata help &f- Mostra esta ajuda"
+    - "{prefix}&a/magnata &8- &7Mostra o magnata atual"
+    - "{prefix}&a/magnata history &8- &7Histórico de magnatas"
+    - "{prefix}&a/magnata reload &8- &7Recarrega o plugin"
+    - "{prefix}&a/magnata help &8- &7Mostra esta ajuda"
   footer: "{prefix}&8&m-------------------------------------"
   empty: "{prefix}&cNenhum comando de ajuda disponível."
 
 ranking:
   position_empty: "{prefix}&7Posição {position}: &cVazia"
-  top_line_format: "{prefix}&e{position}. &6{player} &7- &a{balance}"
+  top_line_format: "{prefix}&8{position}. &a{player} &8- &a{balance}"
