@@ -22,8 +22,8 @@ rewards:
   
   # Recompensas periódicas enquanto permanece magnata
   periodic:
-    interval: 60  # Intervalo em minutos ()
-    commands:
+    interval: 60  # Intervalo em minutos (Coloque 0 para desativar)
+    commands:  # Coloque [] para desativar
       - "eco give %player% 500"  # Concede $500 periodicamente
       - "effect give %player% strength 30 1"  # Efeito de força
 
