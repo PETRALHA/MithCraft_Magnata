@@ -1,6 +1,6 @@
 name: MithCraftMagnata
 main: com.mithcraft.magnata.MagnataPlugin
-version: 1.0.0
+version: 1.0.1
 api-version: "1.21"
 authors: [PETRALHA]
 description: Sistema de Magnata para servidores Minecraft Purpur 1.21

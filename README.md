@@ -96,18 +96,12 @@ rewards:
 ![2025-07-01_20 43 33](https://github.com/user-attachments/assets/75409490-efba-48d9-bec5-76e91156daaf)
 
 
-
-## 📜 Changelog 1.0.0
-
-- Versão estável inicial
-- Sistema completo de magnatas
-- Integração com PlaceholderAPI
-- Suporte a Purpur 1.21+
-
 ## 🔗 Links Úteis
 
 - [Reportar Bug](https://github.com/PETRALHA/MithCraft_Magnata/issues)
 - [Solicitar Feature](https://github.com/PETRALHA/MithCraft_Magnata/discussions)
+- [Discord](https://discord.gg/xa5bux8rvJ)
+- [Spigot](https://www.spigotmc.org/resources/magnata-mithcraft-plugins.126580/)
 
 ---
 

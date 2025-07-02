@@ -116,36 +116,36 @@ public class RewardManager {
         }
     }
 
-    private BukkitTask startPeriodicRewards() {
-        if (periodicRewardTask != null) {
-            periodicRewardTask.cancel();
-        }
-
-        int intervalMinutes = plugin.getConfig().getInt("rewards.periodic.interval", 60);
-        if (intervalMinutes <= 0) {
-            logDebug("Recompensas periódicas desativadas (intervalo <= 0)");
-            return null;
-        }
-
-        long intervalTicks = intervalMinutes * 60 * 20;
-        logDebug("Iniciando recompensas periódicas com intervalo de " + intervalMinutes + " minutos");
-
-        return Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
-            if (current == null) {
-                logDebug("Nenhum magnata atual para recompensas periódicas");
-                return;
+        private BukkitTask startPeriodicRewards() {
+            if (periodicRewardTask != null) {
+                periodicRewardTask.cancel();
             }
 
-            OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
-            if (player.hasPlayedBefore()) {
-                logDebug("Distribuindo recompensas periódicas para: " + current.getPlayerName());
-                executeRewardCommands("periodic.commands", player, null);
-            } else {
-                logDebug("Jogador " + current.getPlayerName() + " nunca jogou, ignorando recompensas");
+            int intervalMinutes = plugin.getConfig().getInt("rewards.periodic.interval", 60);
+            if (intervalMinutes <= 0) {
+                logDebug("Recompensas periódicas desativadas (intervalo <= 0)");
+                return null;
             }
-        }, intervalTicks, intervalTicks);
-    }
+
+            long intervalTicks = intervalMinutes * 60 * 20;
+            logDebug("Iniciando recompensas periódicas com intervalo de " + intervalMinutes + " minutos");
+
+            return Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+                MagnataRecord current = plugin.getHistoryManager().getCurrentMagnata();
+                if (current == null) {
+                    logDebug("Nenhum magnata atual para recompensas periódicas");
+                    return;
+                }
+
+                OfflinePlayer player = Bukkit.getOfflinePlayer(current.getPlayerUUID());
+                if (player.hasPlayedBefore()) {
+                    logDebug("Distribuindo recompensas periódicas para: " + current.getPlayerName());
+                    executeRewardCommands("periodic", player, null); // CORREÇÃO AQUI
+                } else {
+                    logDebug("Jogador " + current.getPlayerName() + " nunca jogou, ignorando recompensas");
+                }
+            }, intervalTicks, intervalTicks);
+        }
 
     private void logDebug(String message) {
         if (plugin.getConfig().getBoolean("settings.debug", false)) {

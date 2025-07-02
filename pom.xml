@@ -6,7 +6,7 @@
 
     <groupId>com.mithcraft</groupId>
     <artifactId>MithCraftMagnata</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>MithCraftMagnata</name>
     <description>Plugin de sistema Magnata para servidores Minecraft</description>
 
